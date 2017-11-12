@@ -7,11 +7,13 @@ import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.SearchCityResponse;
 import com.test.kabak.openweather.core.network.ServerApi;
 import com.test.kabak.openweather.core.storage.City;
+import com.test.kabak.openweather.core.storage.DatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -20,10 +22,12 @@ import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
+import io.reactivex.internal.operators.completable.CompletableFromAction;
 import io.reactivex.schedulers.Schedulers;
 
-public class SearchRepository {
+public class AddCityRepository {
     static final Pattern DIGIT_EXTRACT_PATTERN = Pattern.compile("\\D+");
 
     MutableLiveData<Resource<List<City>>> searchLiveData = new MutableLiveData<>();
@@ -38,6 +42,15 @@ public class SearchRepository {
         searchLiveData.setValue(resource);
         currentSearchString = searchString;
         performSearchRequest(searchString);
+    }
+
+    public Completable saveCity(final City city) {
+        return new CompletableFromAction(new Action() {
+            @Override
+            public void run() throws Exception {
+                DatabaseManager.getDatabase().cityDao().insert(city);
+            }
+        });
     }
 
     private void performSearchRequest(final String searchString) {

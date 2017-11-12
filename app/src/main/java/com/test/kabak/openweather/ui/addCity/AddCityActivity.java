@@ -22,7 +22,9 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 public class AddCityActivity extends BaseActivity {
     ActivityAddCityBinding binding;
@@ -42,7 +44,16 @@ public class AddCityActivity extends BaseActivity {
         searchAdapter.setListener(new SearchAdapter.SearchAdapterListener() {
             @Override
             public void itemClicked(City city) {
-                
+                addCityViewModel
+                        .addCity(city)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                AddCityActivity.this.onBackPressed();
+                            }
+                        });
             }
         });
 
