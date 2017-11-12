@@ -11,9 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.test.kabak.openweather.R;
-import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.storage.CurrentWeather;
 import com.test.kabak.openweather.core.viewModels.CitiesListViewModel;
+import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 import com.test.kabak.openweather.databinding.ActivityListBinding;
 import com.test.kabak.openweather.ui.addCity.AddCityActivity;
 import com.test.kabak.openweather.util.ListConfig;
@@ -37,13 +36,12 @@ public class ListActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this).get(CitiesListViewModel.class);
 
-        viewModel.getListWeather()
-                .observe(this, new Observer<Resource<List<CurrentWeather>>>() {
-                    @Override
-                    public void onChanged(@Nullable Resource<List<CurrentWeather>> listResource) {
-
-                    }
-                });
+        viewModel.weatherLiveData.observe(this, new Observer<List<ListWeatherObject>>() {
+            @Override
+            public void onChanged(@Nullable List<ListWeatherObject> currentWeathers) {
+                citiesAdapter.setItems(currentWeathers);
+            }
+        });
     }
 
     @Override

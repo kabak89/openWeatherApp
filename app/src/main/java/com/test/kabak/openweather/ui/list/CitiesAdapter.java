@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.test.kabak.openweather.core.storage.ForecastWeather;
+import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 import com.test.kabak.openweather.databinding.ViewCityListWeatherBinding;
 
 import java.util.ArrayList;
@@ -14,10 +14,10 @@ import java.util.List;
 
 public class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.CityWeatherBindingHolder> {
     public interface CitiesAdapterListener {
-        void itemClicked(ForecastWeather city, View transitionView);
+        void itemClicked(ListWeatherObject city);
     }
 
-    List<ForecastWeather> cities = new ArrayList<>(10);
+    List<ListWeatherObject> items = new ArrayList<>(10);
     CitiesAdapterListener listener;
 
     public CitiesAdapter() {
@@ -25,11 +25,11 @@ public class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.CityWeathe
         setHasStableIds(true);
     }
 
-    public void setCities(@Nullable List<ForecastWeather> cities) {
-        this.cities.clear();
+    public void setItems(@Nullable List<ListWeatherObject> cities) {
+        this.items.clear();
 
         if (cities != null) {
-            this.cities.addAll(cities);
+            this.items.addAll(cities);
         }
 
         notifyDataSetChanged();
@@ -57,17 +57,17 @@ public class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.CityWeathe
 
     @Override
     public void onBindViewHolder(CityWeatherBindingHolder holder, int position) {
-//        holder.getBinding().setItem(cities.get(position));
+        holder.getBinding().setItem(items.get(position));
     }
 
-//    @Override
-//    public long getItemId(int position) {
-//        return cities.get(position).cityId;
-//    }
+    @Override
+    public long getItemId(int position) {
+        return items.get(position).city.cityId.hashCode();
+    }
 
     @Override
     public int getItemCount() {
-        return this.cities.size();
+        return this.items.size();
     }
 
     static class CityWeatherBindingHolder extends RecyclerView.ViewHolder {
@@ -97,7 +97,7 @@ public class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.CityWeathe
             }
 
             int position = cityWeatherBindingHolder.getAdapterPosition();
-//            listener.itemClicked(cities.get(position), cityWeatherBindingHolder.getBinding().cityImage);
+            listener.itemClicked(items.get(position));
         }
     }
 }

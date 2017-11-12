@@ -10,7 +10,7 @@ import android.arch.persistence.room.PrimaryKey;
 public class CurrentWeather {
     @PrimaryKey
     public int weatherId;
-    public long cityId;
+    public String cityId;
     public float minT;
     public float maxT;
     public String description;

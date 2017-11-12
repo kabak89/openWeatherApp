@@ -3,101 +3,92 @@ package com.test.kabak.openweather.core.repositories;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 
-import com.test.kabak.openweather.core.Resource;
+import com.test.kabak.openweather.core.network.CurrentWeatherResponse;
+import com.test.kabak.openweather.core.network.ServerApi;
+import com.test.kabak.openweather.core.storage.City;
 import com.test.kabak.openweather.core.storage.CurrentWeather;
+import com.test.kabak.openweather.core.storage.DatabaseManager;
+import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.reactivex.Single;
+import io.reactivex.SingleEmitter;
+import io.reactivex.SingleObserver;
+import io.reactivex.SingleOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class CitiesRepository {
-    AtomicBoolean requestInProgress = new AtomicBoolean(false);
-    MutableLiveData<Resource<List<CurrentWeather>>> listWeatherLiveData = new MutableLiveData<>();
+    MutableLiveData<List<ListWeatherObject>> citiesWeather = new MutableLiveData<>();
 
-    public LiveData<Resource<List<CurrentWeather>>> getCities() {
-        Resource<List<CurrentWeather>> resource = new Resource<>(Resource.LOADING, null, null);
-        listWeatherLiveData.setValue(resource);
-
-        if (requestInProgress.get() == false) {
-            loadCities();
-        }
-
-        return listWeatherLiveData;
+    public LiveData<List<City>> getCities() {
+        return DatabaseManager.getDatabase().cityDao().getAll();
     }
 
-    private void loadCities() {
-        requestInProgress.set(true);
-
-        /*Single<CitiesResponse> citiesObservable = ServerApi.getInstance().findCities();
-
-        citiesObservable
-                .flatMap(new Function<CitiesResponse, SingleSource<Resource<List<City>>>>() {
+    public LiveData<List<ListWeatherObject>> getCitiesWeather(final List<City> input) {
+        Single
+                .create(new SingleOnSubscribe<List<ListWeatherObject>>() {
                     @Override
-                    public SingleSource<Resource<List<City>>> apply(final CitiesResponse citiesResponse) throws Exception {
-                        return Single.create(new SingleOnSubscribe<Resource<List<City>>>() {
-                            @Override
-                            public void subscribe(SingleEmitter<Resource<List<City>>> e) throws Exception {
-                                CityDao cityDao = DatabaseManager.getDatabase().cityDao();
-                                cityDao.deleteAll();
-                                List<City> cities = citiesResponse.cities;
-                                cityDao.insertAll(cities);
-                                SharedPreferencesManager.putBoolean(CITIES_DOWNLOADED_KEY, true);
+                    public void subscribe(final SingleEmitter<List<ListWeatherObject>> e) throws Exception {
+                        final List<ListWeatherObject> result = new ArrayList<>(input.size());
 
-                                sortCities(cities);
+                        for (final City currentCity : input) {
+                            Single<CurrentWeatherResponse> currentWeather = ServerApi.getWeatherApi().getCurrentWeather(currentCity.cityId);
 
-                                Resource<List<City>> resource = new Resource<>(Resource.COMPLETED, cities, null);
-                                e.onSuccess(resource);
-                            }
-                        });
+                            currentWeather.subscribe(new SingleObserver<CurrentWeatherResponse>() {
+                                @Override
+                                public void onSubscribe(Disposable d) {
+
+                                }
+
+                                @Override
+                                public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+                                    CurrentWeather currentWeather = new CurrentWeather();
+                                    currentWeather.cityId = currentCity.cityId;
+                                    CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.weather.get(0);
+                                    currentWeather.description = weatherObject.description;
+                                    currentWeather.icon = weatherObject.icon;
+                                    currentWeather.minT = currentWeatherResponse.main.tempMin;
+                                    currentWeather.maxT = currentWeatherResponse.main.tempMax;
+
+                                    ListWeatherObject listWeatherObject = new ListWeatherObject();
+                                    listWeatherObject.city = currentCity;
+                                    listWeatherObject.currentWeather = currentWeather;
+                                    result.add(listWeatherObject);
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+
+                                }
+                            });
+                        }
+
+                        e.onSuccess(result);
                     }
                 })
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<Resource<List<City>>>() {
+                .subscribe(new SingleObserver<List<ListWeatherObject>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onSuccess(Resource<List<City>> listResource) {
-                        listWeatherLiveData.postValue(listResource);
-                        requestInProgress.set(false);
+                    public void onSuccess(List<ListWeatherObject> currentWeathers) {
+                        citiesWeather.setValue(currentWeathers);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Completable
-                                .create(new CompletableOnSubscribe() {
-                                    @Override
-                                    public void subscribe(CompletableEmitter e) throws Exception {
-                                        CityDao cityDao = DatabaseManager.getDatabase().cityDao();
-                                        List<City> cities = cityDao.getAll();
-                                        boolean citiesDownloadedOnce = SharedPreferencesManager.getBoolean(CITIES_DOWNLOADED_KEY, false);
 
-                                        Exception exception;
-
-                                        if (cities.isEmpty()) {
-                                            if (citiesDownloadedOnce) {
-                                                exception = new UpdateException();
-                                            } else {
-                                                exception = new DownloadException();
-                                            }
-                                        } else {
-                                            exception = new UpdateException();
-                                        }
-
-                                        sortCities(cities);
-
-                                        Resource<List<City>> resource = new Resource<>(Resource.COMPLETED, cities, exception);
-                                        listWeatherLiveData.postValue(resource);
-                                        requestInProgress.set(false);
-                                        e.onComplete();
-                                    }
-                                })
-                                .subscribeOn(Schedulers.newThread())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe();
                     }
-                });  */
+                });
+
+        return citiesWeather;
     }
 }
