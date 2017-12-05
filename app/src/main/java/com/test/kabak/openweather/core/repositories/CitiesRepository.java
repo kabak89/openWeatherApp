@@ -34,8 +34,10 @@ public class CitiesRepository {
                     @Override
                     public void subscribe(final SingleEmitter<List<ListWeatherObject>> e) throws Exception {
                         final List<ListWeatherObject> result = new ArrayList<>(input.size());
+                        final List<CurrentWeather> weatherToSave = new ArrayList<>(input.size());
 
                         for (final City currentCity : input) {
+                            final String cityId = currentCity.cityId;
                             Single<CurrentWeatherResponse> currentWeather = ServerApi.getWeatherApi().getCurrentWeather(currentCity.cityId);
 
                             currentWeather.subscribe(new SingleObserver<CurrentWeatherResponse>() {
@@ -47,7 +49,7 @@ public class CitiesRepository {
                                 @Override
                                 public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
                                     CurrentWeather currentWeather = new CurrentWeather();
-                                    currentWeather.cityId = currentCity.cityId;
+                                    currentWeather.cityId = cityId;
                                     CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.weather.get(0);
                                     currentWeather.description = weatherObject.description;
                                     currentWeather.icon = weatherObject.icon;
@@ -58,15 +60,25 @@ public class CitiesRepository {
                                     listWeatherObject.city = currentCity;
                                     listWeatherObject.currentWeather = currentWeather;
                                     result.add(listWeatherObject);
+
+                                    weatherToSave.add(currentWeather);
                                 }
 
                                 @Override
                                 public void onError(Throwable e) {
+                                    CurrentWeather cachedWeather = DatabaseManager.getDatabase().currentWeatherDao().getById(cityId);
 
+                                    if(cachedWeather != null) {
+                                        ListWeatherObject listWeatherObject = new ListWeatherObject();
+                                        listWeatherObject.city = currentCity;
+                                        listWeatherObject.currentWeather = cachedWeather;
+                                        result.add(listWeatherObject);
+                                    }
                                 }
                             });
                         }
 
+                        DatabaseManager.getDatabase().currentWeatherDao().insertAll(weatherToSave);
                         e.onSuccess(result);
                     }
                 })

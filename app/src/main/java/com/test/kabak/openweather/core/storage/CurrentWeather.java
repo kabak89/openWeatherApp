@@ -9,11 +9,10 @@ import android.arch.persistence.room.PrimaryKey;
         childColumns = "cityId"))
 public class CurrentWeather {
     @PrimaryKey
-    public int weatherId;
+    @android.support.annotation.NonNull
     public String cityId;
     public float minT;
     public float maxT;
     public String description;
     public String icon;
-    public long timestamp;
 }
