@@ -1,9 +1,12 @@
 package com.test.kabak.openweather.ui;
 
+import android.content.Context;
 import android.databinding.BindingAdapter;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.test.kabak.openweather.R;
@@ -34,5 +37,13 @@ public class CommonBindingAdapters {
                 .centerCrop()
                 .error(R.drawable.ic_broken_image_white_24px)
                 .into(imageView);
+    }
+
+    @BindingAdapter("shortDate")
+    public static void setShortTimestamp(TextView textView, long timestamp) {
+        Context context = textView.getContext();
+        String time = DateUtils.formatDateTime(context, timestamp, DateUtils.FORMAT_SHOW_TIME);
+        String date = DateUtils.formatDateTime(context, timestamp, DateUtils.FORMAT_NUMERIC_DATE);
+        textView.setText(date + " " + time);
     }
 }

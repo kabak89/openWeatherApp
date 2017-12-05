@@ -7,10 +7,12 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.test.kabak.openweather.R;
+import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.viewModels.CitiesListViewModel;
 import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 import com.test.kabak.openweather.databinding.ActivityListBinding;
@@ -19,10 +21,13 @@ import com.test.kabak.openweather.util.ListConfig;
 
 import java.util.List;
 
+import static com.test.kabak.openweather.core.Resource.COMPLETED;
+
 public class ListActivity extends AppCompatActivity {
     ActivityListBinding binding;
     CitiesAdapter citiesAdapter;
     CitiesListViewModel viewModel;
+    ListResourceObserver observer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,14 +39,21 @@ public class ListActivity extends AppCompatActivity {
         citiesAdapter = new CitiesAdapter();
         binding.setListConfig(new ListConfig(citiesAdapter));
 
-        viewModel = ViewModelProviders.of(this).get(CitiesListViewModel.class);
+        binding.refreshLayout.setEnabled(false);
 
-        viewModel.weatherLiveData.observe(this, new Observer<List<ListWeatherObject>>() {
+        binding.tryAgainLabel.setVisibility(View.INVISIBLE);
+
+        binding.refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onChanged(@Nullable List<ListWeatherObject> currentWeathers) {
-                citiesAdapter.setItems(currentWeathers);
+            public void onRefresh() {
+                viewModel.getListWeather().observe(ListActivity.this, observer);
             }
         });
+
+        viewModel = ViewModelProviders.of(this).get(CitiesListViewModel.class);
+
+        observer = new ListResourceObserver();
+        viewModel.getListWeather().observe(this, observer);
     }
 
     @Override
@@ -53,5 +65,31 @@ public class ListActivity extends AppCompatActivity {
     public void addCityClick(View v) {
         Intent intent = new Intent(this, AddCityActivity.class);
         ActivityCompat.startActivity(this, intent, null);
+    }
+
+    private class ListResourceObserver implements Observer<Resource<List<ListWeatherObject>>> {
+        @Override
+        public void onChanged(@Nullable Resource<List<ListWeatherObject>> listResource) {
+
+            if(listResource.status == COMPLETED) {
+                binding.refreshLayout.setRefreshing(false);
+
+                if(listResource.exception != null) {
+                    binding.tryAgainLabel.setVisibility(View.VISIBLE);
+                    binding.refreshLayout.setEnabled(true);
+
+                    if(listResource.data != null) {
+                        citiesAdapter.setItems(listResource.data);
+                    }
+                } else {
+                    citiesAdapter.setItems(listResource.data);
+                    binding.tryAgainLabel.setVisibility(View.GONE);
+                }
+            }
+            else {
+                binding.refreshLayout.setRefreshing(true);
+                binding.tryAgainLabel.setVisibility(View.GONE);
+            }
+        }
     }
 }

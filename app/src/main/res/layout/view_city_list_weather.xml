@@ -15,7 +15,7 @@
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:paddingBottom="8dp">
 
         <TextView
@@ -32,6 +32,17 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Some city name city name city name city name city name city name city name" />
 
+        <TextView
+            android:id="@+id/timestampLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            app:layout_constraintLeft_toLeftOf="@+id/cityNameView"
+            app:layout_constraintTop_toBottomOf="@+id/cityNameView"
+            bind:shortDate="@{item.currentWeather.timestamp}"
+            tools:text="12.12.2017" />
+
         <ImageView
             android:id="@+id/weatherImage"
             android:layout_width="40dp"
@@ -47,12 +58,12 @@
             android:id="@+id/descriptionView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:text="@{item.currentWeather.description}"
             app:layout_constraintLeft_toRightOf="@+id/guideline"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/weatherImage"
-            android:layout_marginRight="8dp"
             tools:text="Some description description description description description" />
 
         <TextView
@@ -71,14 +82,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent=".60" />
+            app:layout_constraintGuide_end="110dp" />
 
         <android.support.constraint.Guideline
             android:id="@+id/guidelin2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent=".75" />
+            app:layout_constraintGuide_end="50dp" />
 
     </android.support.constraint.ConstraintLayout>
 

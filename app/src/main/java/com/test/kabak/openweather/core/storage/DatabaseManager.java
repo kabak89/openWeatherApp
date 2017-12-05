@@ -8,7 +8,10 @@ public class DatabaseManager {
     private static LocalDatabase database;
 
     public static void init(@NonNull Context context) {
-        database = Room.databaseBuilder(context, LocalDatabase.class, "database").build();
+        database = Room
+                .databaseBuilder(context, LocalDatabase.class, "database")
+                .fallbackToDestructiveMigration()
+                .build();
     }
 
     public static LocalDatabase getDatabase() {

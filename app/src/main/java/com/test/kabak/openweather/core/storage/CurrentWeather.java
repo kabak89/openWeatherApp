@@ -15,4 +15,5 @@ public class CurrentWeather {
     public float maxT;
     public String description;
     public String icon;
+    public long timestamp;
 }
