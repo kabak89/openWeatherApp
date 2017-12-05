@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class CurrentWeatherResponse {
     public ArrayList<WeatherObject> weather;
     public MainObject main;
+    public WindObject wind;
 
     public static class WeatherObject {
         public String description;
@@ -19,5 +20,10 @@ public class CurrentWeatherResponse {
 
         @SerializedName("temp_max")
         public float tempMax;
+    }
+
+    public static class WindObject {
+        @SerializedName("speed")
+        public int windSpeed;
     }
 }

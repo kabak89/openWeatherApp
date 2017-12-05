@@ -23,6 +23,8 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CitiesRepository {
+    private static final int CURRENT_WEATHER_MAX_LIVE_TIME = 1000 * 60 * 10;
+
     MutableLiveData<Resource<List<ListWeatherObject>>> citiesWeather = new MutableLiveData<>();
 
     public LiveData<List<City>> getCities() {
@@ -44,35 +46,43 @@ public class CitiesRepository {
 
                         for (final City currentCity : input) {
                             final String cityId = currentCity.cityId;
-                            Single<CurrentWeatherResponse> currentWeatherSingle = ServerApi.getWeatherApi().getCurrentWeather(currentCity.cityId);
 
-                            try {
-                                CurrentWeatherResponse currentWeatherResponse = currentWeatherSingle.blockingGet();
-                                CurrentWeather currentWeather = new CurrentWeather();
-                                currentWeather.cityId = cityId;
-                                CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.weather.get(0);
-                                currentWeather.description = weatherObject.description;
-                                currentWeather.icon = weatherObject.icon;
-                                currentWeather.minT = currentWeatherResponse.main.tempMin;
-                                currentWeather.maxT = currentWeatherResponse.main.tempMax;
-                                currentWeather.timestamp = System.currentTimeMillis();
+                            CurrentWeather cachedWeather = DatabaseManager.getDatabase().currentWeatherDao().getById(cityId);
 
-                                ListWeatherObject listWeatherObject = new ListWeatherObject();
-                                listWeatherObject.city = currentCity;
-                                listWeatherObject.currentWeather = currentWeather;
-                                result.add(listWeatherObject);
+                            long weatherLiveTime = 0;
 
-                                weatherToSave.add(currentWeather);
-                            } catch (Exception networkException) {
-                                exception = networkException;
-                                CurrentWeather cachedWeather = DatabaseManager.getDatabase().currentWeatherDao().getById(cityId);
+                            if(cachedWeather != null) {
+                                weatherLiveTime = System.currentTimeMillis() - cachedWeather.timestamp;
+                            }
 
-                                if(cachedWeather != null) {
-                                    ListWeatherObject listWeatherObject = new ListWeatherObject();
-                                    listWeatherObject.city = currentCity;
-                                    listWeatherObject.currentWeather = cachedWeather;
-                                    result.add(listWeatherObject);
+                            if(cachedWeather == null || weatherLiveTime > CURRENT_WEATHER_MAX_LIVE_TIME) {
+                                Single<CurrentWeatherResponse> currentWeatherSingle = ServerApi.getWeatherApi().getCurrentWeather(currentCity.cityId);
+
+                                try {
+                                    CurrentWeatherResponse currentWeatherResponse = currentWeatherSingle.blockingGet();
+                                    CurrentWeather currentWeather = new CurrentWeather();
+                                    currentWeather.cityId = cityId;
+                                    CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.weather.get(0);
+                                    currentWeather.description = weatherObject.description;
+                                    currentWeather.icon = weatherObject.icon;
+                                    currentWeather.minT = currentWeatherResponse.main.tempMin;
+                                    currentWeather.maxT = currentWeatherResponse.main.tempMax;
+                                    currentWeather.timestamp = System.currentTimeMillis();
+                                    currentWeather.windSpeed = currentWeatherResponse.wind.windSpeed;
+
+                                    addCachedWeatherToResult(result, currentCity, currentWeather);
+
+                                    weatherToSave.add(currentWeather);
+                                } catch (Exception networkException) {
+                                    exception = networkException;
+
+                                    if (cachedWeather != null) {
+                                        addCachedWeatherToResult(result, currentCity, cachedWeather);
+                                    }
                                 }
+                            }
+                            else {
+                                addCachedWeatherToResult(result, currentCity, cachedWeather);
                             }
                         }
 
@@ -103,5 +113,12 @@ public class CitiesRepository {
                 });
 
         return citiesWeather;
+    }
+
+    private void addCachedWeatherToResult(List<ListWeatherObject> result, City currentCity, CurrentWeather cachedWeather) {
+        ListWeatherObject listWeatherObject = new ListWeatherObject();
+        listWeatherObject.city = currentCity;
+        listWeatherObject.currentWeather = cachedWeather;
+        result.add(listWeatherObject);
     }
 }

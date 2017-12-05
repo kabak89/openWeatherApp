@@ -84,11 +84,13 @@ public class ListActivity extends AppCompatActivity {
                 } else {
                     citiesAdapter.setItems(listResource.data);
                     binding.tryAgainLabel.setVisibility(View.GONE);
+                    binding.refreshLayout.setEnabled(false);
                 }
             }
-            else {
+            else if(listResource.status == Resource.LOADING) {
                 binding.refreshLayout.setRefreshing(true);
                 binding.tryAgainLabel.setVisibility(View.GONE);
+                binding.refreshLayout.setEnabled(false);
             }
         }
     }
