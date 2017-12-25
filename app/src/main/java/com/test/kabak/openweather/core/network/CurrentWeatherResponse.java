@@ -24,6 +24,6 @@ public class CurrentWeatherResponse {
 
     public static class WindObject {
         @SerializedName("speed")
-        public int windSpeed;
+        public float windSpeed;
     }
 }

@@ -107,6 +107,7 @@ public class AddCityRepository {
 
                     @Override
                     public void onError(Throwable e) {
+                        e.printStackTrace();
                         Resource<List<City>> listResource = new Resource<>(Resource.COMPLETED, null, new Exception(e.getMessage()));
                         searchLiveData.setValue(listResource);
                     }

@@ -14,14 +14,6 @@ import java.util.List;
 public class CitiesListViewModel extends ViewModel {
     CitiesRepository citiesRepository = new CitiesRepository();
 
-//    public final LiveData<Resource<List<ListWeatherObject>>> weatherLiveData
-//            = Transformations.switchMap(citiesRepository.getCities(), new Function<List<City>, LiveData<Resource<List<ListWeatherObject>>>>() {
-//        @Override
-//        public LiveData<Resource<List<ListWeatherObject>>> apply(List<City> input) {
-//            return citiesRepository.getCitiesWeather(input);
-//        }
-//    });
-
     public LiveData<Resource<List<ListWeatherObject>>> getListWeather() {
         return Transformations.switchMap(citiesRepository.getCities(), new Function<List<City>, LiveData<Resource<List<ListWeatherObject>>>>() {
             @Override

@@ -74,6 +74,7 @@ public class CitiesRepository {
 
                                     weatherToSave.add(currentWeather);
                                 } catch (Exception networkException) {
+                                    networkException.printStackTrace();
                                     exception = networkException;
 
                                     if (cachedWeather != null) {
@@ -107,6 +108,7 @@ public class CitiesRepository {
 
                     @Override
                     public void onError(Throwable e) {
+                        e.printStackTrace();
                         Resource <List<ListWeatherObject>> resource = new Resource(Resource.COMPLETED, null, new Exception());
                         citiesWeather.setValue(resource);
                     }
@@ -115,7 +117,7 @@ public class CitiesRepository {
         return citiesWeather;
     }
 
-    private void addCachedWeatherToResult(List<ListWeatherObject> result, City currentCity, CurrentWeather cachedWeather) {
+    void addCachedWeatherToResult(List<ListWeatherObject> result, City currentCity, CurrentWeather cachedWeather) {
         ListWeatherObject listWeatherObject = new ListWeatherObject();
         listWeatherObject.city = currentCity;
         listWeatherObject.currentWeather = cachedWeather;

@@ -16,5 +16,5 @@ public class CurrentWeather {
     public String description;
     public String icon;
     public long timestamp;
-    public int windSpeed;
+    public float windSpeed;
 }
