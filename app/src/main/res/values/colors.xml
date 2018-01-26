@@ -6,4 +6,6 @@
 
     <color name="colorListItemText">#424242</color>
     <color name="colorListItemTextPressed">#e0e0e0</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorListItemBackgroundPressed">#b9b9b9</color>
 </resources>

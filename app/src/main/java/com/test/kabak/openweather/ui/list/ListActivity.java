@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.test.kabak.openweather.R;
@@ -16,14 +15,18 @@ import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.viewModels.CitiesListViewModel;
 import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 import com.test.kabak.openweather.databinding.ActivityListBinding;
+import com.test.kabak.openweather.ui.BaseActivity;
 import com.test.kabak.openweather.ui.addCity.AddCityActivity;
+import com.test.kabak.openweather.ui.forecast.ForecastActivity;
 import com.test.kabak.openweather.util.ListConfig;
 
 import java.util.List;
 
 import static com.test.kabak.openweather.core.Resource.COMPLETED;
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends BaseActivity {
+    public static final String CITY_ID_KEY = "CITY_ID_KEY";
+
     ActivityListBinding binding;
     CitiesAdapter citiesAdapter;
     CitiesListViewModel viewModel;
@@ -37,10 +40,20 @@ public class ListActivity extends AppCompatActivity {
         binding.setHandler(this);
 
         citiesAdapter = new CitiesAdapter();
+        citiesAdapter.setListener(new CitiesAdapter.CitiesAdapterListener() {
+            @Override
+            public void itemClicked(ListWeatherObject listWeatherObject) {
+                Intent intent = new Intent(ListActivity.this, ForecastActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString(CITY_ID_KEY, listWeatherObject.city.cityId);
+                intent.putExtras(bundle);
+                ActivityCompat.startActivity(ListActivity.this, intent, null);
+            }
+        });
+
         binding.setListConfig(new ListConfig(citiesAdapter));
 
         binding.refreshLayout.setEnabled(false);
-
         binding.tryAgainLabel.setVisibility(View.INVISIBLE);
 
         binding.refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -70,6 +83,10 @@ public class ListActivity extends AppCompatActivity {
     private class ListResourceObserver implements Observer<Resource<List<ListWeatherObject>>> {
         @Override
         public void onChanged(@Nullable Resource<List<ListWeatherObject>> listResource) {
+
+            if(listResource == null) {
+                return;
+            }
 
             if(listResource.status == COMPLETED) {
                 binding.refreshLayout.setRefreshing(false);

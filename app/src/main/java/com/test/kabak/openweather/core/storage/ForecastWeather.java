@@ -7,5 +7,6 @@ import android.arch.persistence.room.ForeignKey;
         parentColumns = "cityId",
         childColumns = "cityId"))
 public class ForecastWeather extends CurrentWeather {
-
+    public long dateTime;
+    public float temperature;
 }

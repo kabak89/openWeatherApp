@@ -25,6 +25,9 @@
         <activity
             android:name=".ui.addCity.AddCityActivity"/>
 
+        <activity
+            android:name=".ui.forecast.ForecastActivity"/>
+
     </application>
 
 </manifest>
