@@ -12,6 +12,10 @@ import com.squareup.picasso.Picasso;
 import com.test.kabak.openweather.R;
 import com.test.kabak.openweather.util.ListConfig;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import static com.test.kabak.openweather.core.network.ServerApi.IMAGES_BASE_URL;
 
 public class CommonBindingAdapters {
@@ -45,5 +49,11 @@ public class CommonBindingAdapters {
         String time = DateUtils.formatDateTime(context, timestamp, DateUtils.FORMAT_SHOW_TIME);
         String date = DateUtils.formatDateTime(context, timestamp, DateUtils.FORMAT_NUMERIC_DATE);
         textView.setText(date + " " + time);
+    }
+
+    @BindingAdapter("monthDay")
+    public static void setMonthDayTimestamp(TextView textView, long timestamp) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d LLLL HH mm", Locale.getDefault());
+        textView.setText(simpleDateFormat.format(new Date(timestamp)));
     }
 }

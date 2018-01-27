@@ -41,7 +41,6 @@ public class DaysAdapter extends RecyclerView.Adapter<DaysAdapter.DayBindingView
     @Override
     public void onBindViewHolder(DayBindingViewHolder holder, int position) {
         holder.getBinding().setItem(items.get(position));
-        holder.getBinding().executePendingBindings();
     }
 
     @Override

@@ -21,10 +21,11 @@
                 android:layout_height="match_parent"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:paddingBottom="80dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
                 android:scrollbars="vertical"
                 bind:listConfig="@{listConfig}"
-                tools:listitem="@layout/view_city_list_weather"/>
+                tools:listitem="@layout/view_forecast_list_day"/>
 
     </android.support.constraint.ConstraintLayout>
 

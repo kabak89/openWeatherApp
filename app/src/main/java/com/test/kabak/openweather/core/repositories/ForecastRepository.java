@@ -2,6 +2,7 @@ package com.test.kabak.openweather.core.repositories;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.util.Log;
 
 import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.ForecastResponse;
@@ -44,6 +45,12 @@ public class ForecastRepository {
                             ForecastWeather forecastWeather = new ForecastWeather();
                             forecastWeather.cityId = cityId;;
                             forecastWeather.temperature = currentForecast.main.temperature;
+                            forecastWeather.dateTime = currentForecast.dateTime * 1000;
+                            forecastWeather.windSpeed = currentForecast.wind.windSpeed;
+                            forecastWeather.icon = currentForecast.weather.get(0).icon;
+                            forecastWeather.description = currentForecast.weather.get(0).description;
+                            forecastWeather.minT = currentForecast.main.minT;
+                            forecastWeather.maxT = currentForecast.main.maxT;
 
                             forecastDayObject.forecasts.add(forecastWeather);
                         }
@@ -53,7 +60,7 @@ public class ForecastRepository {
 
                     @Override
                     public void onError(Throwable e) {
-
+                        Log.d("", "");
                     }
                 });
 

@@ -17,14 +17,71 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/selector_list_weather_item"
-        >
+        android:paddingBottom="8dp">
 
         <TextView
+            android:id="@+id/timestampLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{String.format("%.0f", item.temperature) + "°"}'
-            tools:text="-26"
-            android:textColor="@color/colorListItemText"/>
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            bind:monthDay="@{item.dateTime}"
+            tools:text="12 January" />
+
+        <TextView
+            android:id="@+id/temperatureLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text='@{String.format("%.0f°...%.0f°", item.minT, item.maxT)}'
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/colorListItemText"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="-26°...-39°" />
+
+        <ImageView
+            android:id="@+id/weatherImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline"
+            app:layout_constraintTop_toBottomOf="@+id/temperatureLabel"
+            bind:weatherIcon="@{item.icon}"
+            tools:src="@drawable/ic_launcher_background" />
+
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="130dp" />
+
+        <TextView
+            android:id="@+id/descriptionView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@{item.description}"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            app:layout_constraintTop_toBottomOf="@+id/weatherImage"
+            tools:text="Some description" />
+
+        <TextView
+            android:id="@+id/windSpeedLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text='@{@string/wind_speed_prefix + " " + String.valueOf(item.windSpeed) + " " + @string/wind_speed_postfix}'
+            tools:text="Wind: 123 m/s"
+            app:layout_constraintTop_toBottomOf="@+id/timestampLabel"
+            android:layout_marginLeft="16dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_marginTop="40dp"/>
 
     </android.support.constraint.ConstraintLayout>
 
