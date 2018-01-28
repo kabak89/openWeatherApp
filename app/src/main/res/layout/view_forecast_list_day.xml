@@ -9,7 +9,7 @@
 
         <variable
             name="item"
-            type="com.test.kabak.openweather.core.storage.ForecastWeather" />
+            type="com.test.kabak.openweather.core.viewModels.ForecastDay" />
 
     </data>
 
@@ -28,7 +28,7 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            bind:monthDay="@{item.dateTime}"
+            bind:monthDay="@{item.dayWeather.dateTime}"
             tools:text="12 January" />
 
         <TextView
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text='@{String.format("%.0f°...%.0f°", item.minT, item.maxT)}'
+            android:text='@{String.format("%.0f°...%.0f°", item.dayWeather.minT, item.dayWeather.maxT)}'
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="@color/colorListItemText"
             app:layout_constraintLeft_toLeftOf="@+id/guideline"
@@ -50,7 +50,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintLeft_toLeftOf="@+id/guideline"
             app:layout_constraintTop_toBottomOf="@+id/temperatureLabel"
-            bind:weatherIcon="@{item.icon}"
+            bind:weatherIcon="@{item.dayWeather.icon}"
             tools:src="@drawable/ic_launcher_background" />
 
         <android.support.constraint.Guideline
@@ -65,7 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="@{item.description}"
+            android:text="@{item.dayWeather.description}"
             app:layout_constraintLeft_toLeftOf="@+id/guideline"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             app:layout_constraintTop_toBottomOf="@+id/weatherImage"
@@ -75,7 +75,7 @@
             android:id="@+id/windSpeedLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text='@{@string/wind_speed_prefix + " " + String.valueOf(item.windSpeed) + " " + @string/wind_speed_postfix}'
+            android:text='@{@string/wind_speed_prefix + " " + String.valueOf(item.dayWeather.windSpeed) + " " + @string/wind_speed_postfix}'
             tools:text="Wind: 123 m/s"
             app:layout_constraintTop_toBottomOf="@+id/timestampLabel"
             android:layout_marginLeft="16dp"

@@ -8,14 +8,11 @@ import android.support.annotation.Nullable;
 
 import com.test.kabak.openweather.R;
 import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.viewModels.CitiesListViewModel;
 import com.test.kabak.openweather.core.viewModels.ForecastDayObject;
 import com.test.kabak.openweather.core.viewModels.ForecastViewModel;
 import com.test.kabak.openweather.databinding.ActivityForecastBinding;
 import com.test.kabak.openweather.ui.BaseActivity;
 import com.test.kabak.openweather.util.ListConfig;
-
-import java.util.List;
 
 import static com.test.kabak.openweather.ui.list.ListActivity.CITY_ID_KEY;
 
@@ -47,7 +44,7 @@ public class ForecastActivity extends BaseActivity{
 
                 if(listResource.status == Resource.COMPLETED) {
                     if(listResource.exception == null) {
-                        citiesAdapter.setItems(listResource.data.forecasts);
+                        citiesAdapter.setItems(listResource.data.forecastDays);
                     }
                 }
             }

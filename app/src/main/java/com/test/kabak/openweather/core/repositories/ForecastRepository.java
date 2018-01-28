@@ -8,9 +8,18 @@ import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.ForecastResponse;
 import com.test.kabak.openweather.core.network.ServerApi;
 import com.test.kabak.openweather.core.storage.ForecastWeather;
+import com.test.kabak.openweather.core.storage.ForecastWeather.ForecastWeatherComparator;
+import com.test.kabak.openweather.core.viewModels.ForecastDay;
+import com.test.kabak.openweather.core.viewModels.ForecastDay.ForecastDayComparator;
 import com.test.kabak.openweather.core.viewModels.ForecastDayObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Single;
 import io.reactivex.SingleObserver;
@@ -39,7 +48,9 @@ public class ForecastRepository {
                     public void onSuccess(ForecastResponse forecastResponse) {
                         ArrayList<ForecastResponse.ForecastObject> forecasts = forecastResponse.forecasts;
                         ForecastDayObject forecastDayObject = new ForecastDayObject();
-                        forecastDayObject.forecasts = new ArrayList<>(forecasts.size());
+                        forecastDayObject.forecastDays = new ArrayList<>(forecasts.size());
+
+                        List<ForecastWeather> hourForecasts = new ArrayList<>(forecasts.size());
 
                         for(ForecastResponse.ForecastObject currentForecast : forecasts) {
                             ForecastWeather forecastWeather = new ForecastWeather();
@@ -52,8 +63,56 @@ public class ForecastRepository {
                             forecastWeather.minT = currentForecast.main.minT;
                             forecastWeather.maxT = currentForecast.main.maxT;
 
-                            forecastDayObject.forecasts.add(forecastWeather);
+                            hourForecasts.add(forecastWeather);
                         }
+
+                        Map<Integer, ArrayList<ForecastWeather>> groupedForecasts = new HashMap<>(10);
+
+                        for(ForecastWeather currentForeacst : hourForecasts) {
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTimeInMillis(currentForeacst.dateTime);
+                            int key = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR);
+
+                            ArrayList<ForecastWeather> existedArray = groupedForecasts.get(key);
+
+                            if(existedArray == null) {
+                                existedArray = new ArrayList<>(10);
+                                groupedForecasts.put(key, existedArray);
+                            }
+
+                            existedArray.add(currentForeacst);
+                        }
+
+                        Set<Map.Entry<Integer, ArrayList<ForecastWeather>>> entries = groupedForecasts.entrySet();
+                        int dayWeatherClock = 12;
+
+                        for (Map.Entry<Integer, ArrayList<ForecastWeather>> entry : entries) {
+                            ArrayList<ForecastWeather> dayForecasts = entry.getValue();
+                            ForecastDay forecastDay = new ForecastDay();
+                            forecastDay.hourlyWeather = new ArrayList<>(dayForecasts.size());
+                            forecastDay.hourlyWeather.addAll(dayForecasts);
+                            Collections.sort(forecastDay.hourlyWeather, new ForecastWeatherComparator());
+
+                            ForecastWeather nearestWeaher = null;
+                            int nearestHour = Integer.MAX_VALUE;
+
+                            for (ForecastWeather currentForecastWeather : forecastDay.hourlyWeather) {
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTimeInMillis(currentForecastWeather.dateTime);
+                                int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
+
+                                if(Math.abs(hourOfDay - dayWeatherClock) < Math.abs(nearestHour - dayWeatherClock)) {
+                                    nearestHour = hourOfDay;
+                                    nearestWeaher = currentForecastWeather;
+                                }
+                            }
+
+                            forecastDay.dayWeather = nearestWeaher;
+
+                            forecastDayObject.forecastDays.add(forecastDay);
+                        }
+
+                        Collections.sort(forecastDayObject.forecastDays, new ForecastDayComparator());
 
                         data.setValue(new Resource<>(Resource.COMPLETED, forecastDayObject, null));
                     }

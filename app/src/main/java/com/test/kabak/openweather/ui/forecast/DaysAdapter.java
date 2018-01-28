@@ -6,15 +6,16 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.test.kabak.openweather.core.storage.ForecastWeather;
+import com.test.kabak.openweather.core.viewModels.ForecastDay;
 import com.test.kabak.openweather.databinding.ViewForecastListDayBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DaysAdapter extends RecyclerView.Adapter<DaysAdapter.DayBindingViewHolder>{
-    List<ForecastWeather> items = new ArrayList<>(10);
+    List<ForecastDay> items = new ArrayList<>(10);
 
-    public void setItems(@Nullable List<ForecastWeather> cities) {
+    public void setItems(@Nullable List<ForecastDay> cities) {
         this.items.clear();
 
         if (cities != null) {
