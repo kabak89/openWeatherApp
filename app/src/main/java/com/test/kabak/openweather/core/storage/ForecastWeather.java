@@ -5,10 +5,17 @@ import android.arch.persistence.room.ForeignKey;
 
 import java.util.Comparator;
 
-@Entity(foreignKeys = @ForeignKey(entity = City.class,
-        parentColumns = "cityId",
-        childColumns = "cityId"))
-public class ForecastWeather extends CurrentWeather {
+@Entity(foreignKeys = @ForeignKey(entity = City.class, parentColumns = "cityId", childColumns = "cityId"),
+        primaryKeys = {"cityId", "dateTime"})
+public class ForecastWeather {
+    @android.support.annotation.NonNull
+    public String cityId;
+    public float minT;
+    public float maxT;
+    public String description;
+    public String icon;
+    public long timestamp;
+    public float windSpeed;
     public long dateTime;
     public float temperature;
 
