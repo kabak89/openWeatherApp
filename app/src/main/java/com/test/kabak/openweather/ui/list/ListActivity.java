@@ -66,6 +66,12 @@ public class ListActivity extends BaseActivity {
         viewModel = ViewModelProviders.of(this).get(CitiesListViewModel.class);
 
         observer = new ListResourceObserver();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         viewModel.getListWeather().observe(this, observer);
     }
 

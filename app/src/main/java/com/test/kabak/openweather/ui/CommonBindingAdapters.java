@@ -53,7 +53,13 @@ public class CommonBindingAdapters {
 
     @BindingAdapter("monthDay")
     public static void setMonthDayTimestamp(TextView textView, long timestamp) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d LLLL HH mm", Locale.getDefault());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d LLLL", Locale.getDefault());
+        textView.setText(simpleDateFormat.format(new Date(timestamp)));
+    }
+
+    @BindingAdapter("weekDay")
+    public static void setWeekDayTimestamp(TextView textView, long timestamp) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
         textView.setText(simpleDateFormat.format(new Date(timestamp)));
     }
 }

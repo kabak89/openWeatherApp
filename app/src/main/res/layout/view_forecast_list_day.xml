@@ -32,6 +32,17 @@
             tools:text="12 January" />
 
         <TextView
+            android:id="@+id/weekDayLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timestampLabel"
+            bind:weekDay="@{item.dayWeather.dateTime}"
+            tools:text="Friday" />
+
+        <TextView
             android:id="@+id/temperatureLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
