@@ -8,10 +8,6 @@
     <data>
 
         <variable
-            name="listConfig"
-            type="com.test.kabak.openweather.util.ListConfig" />
-
-        <variable
             name="handler"
             type="com.test.kabak.openweather.ui.list.ListActivity" />
 
@@ -48,8 +44,8 @@
                 android:clipToPadding="false"
                 android:paddingBottom="80dp"
                 android:scrollbars="vertical"
-                bind:listConfig="@{listConfig}"
-                tools:listitem="@layout/view_city_list_weather"/>
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/view_city_list_weather" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -57,8 +53,8 @@
             android:id="@+id/addCityButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
             android:onClick="@{handler::addCityClick}"
             android:src="@drawable/ic_add_white_24px"
             app:layout_constraintBottom_toBottomOf="parent"

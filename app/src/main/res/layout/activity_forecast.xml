@@ -1,13 +1,8 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
-        <variable
-            name="listConfig"
-            type="com.test.kabak.openweather.util.ListConfig" />
 
     </data>
 
@@ -15,17 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/forecastListView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:paddingBottom="8dp"
-                android:paddingTop="8dp"
-                android:scrollbars="vertical"
-                bind:listConfig="@{listConfig}"
-                tools:listitem="@layout/view_forecast_list_day"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/forecastListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/view_forecast_list_day" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

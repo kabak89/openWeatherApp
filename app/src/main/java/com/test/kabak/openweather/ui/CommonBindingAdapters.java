@@ -19,15 +19,6 @@ import java.util.Locale;
 import static com.test.kabak.openweather.core.network.ServerApi.IMAGES_BASE_URL;
 
 public class CommonBindingAdapters {
-    @BindingAdapter("listConfig")
-    public static void configRecyclerView(RecyclerView recyclerView, ListConfig config) {
-        if (config == null) {
-            return;
-        }
-
-        config.applyConfig(recyclerView.getContext(), recyclerView);
-    }
-
     @BindingAdapter("weatherIcon")
     public static void loadImage(ImageView imageView, String url) {
         if (url == null) {
