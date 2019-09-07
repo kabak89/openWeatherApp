@@ -1,18 +1,18 @@
 package com.test.kabak.openweather.core.repositories;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.annotation.NonNull;
 
 import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.network.ForecastResponse;
 import com.test.kabak.openweather.core.network.ServerApi;
+import com.test.kabak.openweather.core.network.dataClasses.ForecastResponse;
 import com.test.kabak.openweather.core.storage.DatabaseManager;
 import com.test.kabak.openweather.core.storage.ForecastWeather;
 import com.test.kabak.openweather.core.storage.ForecastWeather.ForecastWeatherComparator;
-import com.test.kabak.openweather.core.viewModels.ForecastDay;
-import com.test.kabak.openweather.core.viewModels.ForecastDay.ForecastDayComparator;
-import com.test.kabak.openweather.core.viewModels.ForecastDayObject;
+import com.test.kabak.openweather.ui.forecast.ForecastDay;
+import com.test.kabak.openweather.ui.forecast.ForecastDay.ForecastDayComparator;
+import com.test.kabak.openweather.ui.forecast.ForecastDayObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,7 +42,7 @@ public class ForecastRepository {
                 .create(new SingleOnSubscribe<List<ForecastWeather>>() {
                     @Override
                     public void subscribe(SingleEmitter<List<ForecastWeather>> e) throws Exception {
-                        List<ForecastWeather> cachedForecast = DatabaseManager.getDatabase().forecastWeatherDao().getCachedForecast(cityId, FORECAST_LIVE_TIME);
+                        List<ForecastWeather> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, FORECAST_LIVE_TIME);
                         if (cachedForecast.isEmpty()) {
                             e.onError(new Exception("Empty database"));
                         } else {
@@ -74,7 +74,7 @@ public class ForecastRepository {
     }
 
     void downloadForecast(final String cityId) {
-        Single<ForecastResponse> responseSingle = ServerApi.getWeatherApi().getForecast(cityId);
+        Single<ForecastResponse> responseSingle = ServerApi.INSTANCE.getWeatherApi().getForecast(cityId);
 
         responseSingle
                 .subscribeOn(Schedulers.io())
@@ -82,8 +82,8 @@ public class ForecastRepository {
                 .map(new Function<ForecastResponse, List<ForecastWeather>>() {
                     @Override
                     public List<ForecastWeather> apply(ForecastResponse forecastResponse) throws Exception {
-                        List<ForecastWeather> hourForecasts = convertServerResponseToStorageObjects(forecastResponse.forecasts, cityId);
-                        DatabaseManager.getDatabase().forecastWeatherDao().insertAll(hourForecasts);
+                        List<ForecastWeather> hourForecasts = convertServerResponseToStorageObjects(forecastResponse.getForecasts(), cityId);
+                        DatabaseManager.INSTANCE.getDb().forecastWeatherDao().insertAll(hourForecasts);
                         return hourForecasts;
                     }
                 })
@@ -115,29 +115,24 @@ public class ForecastRepository {
         Set<Map.Entry<Integer, ArrayList<ForecastWeather>>> entries = groupedForecasts.entrySet();
         ForecastDayObject forecastDayObject = buildDayObject(entries);
 
-        Collections.sort(forecastDayObject.forecastDays, new ForecastDayComparator());
+        Collections.sort(forecastDayObject.getForecastDays(), new ForecastDayComparator());
         return forecastDayObject;
     }
 
     @NonNull
     static ForecastDayObject buildDayObject(Set<Map.Entry<Integer, ArrayList<ForecastWeather>>> entries) {
-        ForecastDayObject forecastDayObject = new ForecastDayObject();
-        forecastDayObject.forecastDays = new ArrayList<>(10);
+        ArrayList<ForecastDay> objects = new ArrayList<>(10);
 
         for (Map.Entry<Integer, ArrayList<ForecastWeather>> entry : entries) {
             ArrayList<ForecastWeather> dayForecasts = entry.getValue();
-            ForecastDay forecastDay = new ForecastDay();
-            forecastDay.hourlyWeather = new ArrayList<>(dayForecasts.size());
-            forecastDay.hourlyWeather.addAll(dayForecasts);
-            Collections.sort(forecastDay.hourlyWeather, new ForecastWeatherComparator());
 
             ForecastWeather nearestWeather = null;
             int nearestHour = Integer.MAX_VALUE;
             int dayWeatherClock = 12;
 
-            for (ForecastWeather currentForecastWeather : forecastDay.hourlyWeather) {
+            for (ForecastWeather currentForecastWeather : dayForecasts) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(currentForecastWeather.dateTime);
+                calendar.setTimeInMillis(currentForecastWeather.getDateTime());
                 int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
 
                 if(Math.abs(hourOfDay - dayWeatherClock) < Math.abs(nearestHour - dayWeatherClock)) {
@@ -146,9 +141,12 @@ public class ForecastRepository {
                 }
             }
 
-            forecastDay.dayWeather = nearestWeather;
-            forecastDayObject.forecastDays.add(forecastDay);
+            ForecastDay forecastDay = new ForecastDay(nearestWeather, dayForecasts);
+            Collections.sort(forecastDay.getHourlyWeather(), new ForecastWeatherComparator());
+            objects.add(forecastDay);
         }
+
+        ForecastDayObject forecastDayObject = new ForecastDayObject(objects);
         return forecastDayObject;
     }
 
@@ -158,7 +156,7 @@ public class ForecastRepository {
 
         for(ForecastWeather currentForecast : hourForecasts) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(currentForecast.dateTime);
+            calendar.setTimeInMillis(currentForecast.getDateTime());
             int key = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR);
 
             ArrayList<ForecastWeather> existedArray = groupedForecasts.get(key);
@@ -174,21 +172,21 @@ public class ForecastRepository {
     }
 
     @NonNull
-    static List<ForecastWeather> convertServerResponseToStorageObjects(ArrayList<ForecastResponse.ForecastObject> forecasts, String cityId) {
+    static List<ForecastWeather> convertServerResponseToStorageObjects(List<ForecastResponse.ForecastObject> forecasts, String cityId) {
         List<ForecastWeather> hourForecasts = new ArrayList<>(forecasts.size());
         long now = System.currentTimeMillis();
 
         for(ForecastResponse.ForecastObject currentForecast : forecasts) {
-            ForecastWeather forecastWeather = new ForecastWeather();
-            forecastWeather.cityId = cityId;
-            forecastWeather.temperature = currentForecast.main.temperature;
-            forecastWeather.dateTime = currentForecast.dateTime * 1000;
-            forecastWeather.windSpeed = currentForecast.wind.windSpeed;
-            forecastWeather.icon = currentForecast.weather.get(0).icon;
-            forecastWeather.description = currentForecast.weather.get(0).description;
-            forecastWeather.minT = currentForecast.main.minT;
-            forecastWeather.maxT = currentForecast.main.maxT;
-            forecastWeather.timestamp = now;
+            ForecastWeather forecastWeather = new ForecastWeather(
+                    cityId,
+                    currentForecast.getMain().getMinT(),
+                    currentForecast.getMain().getMaxT(),
+                    currentForecast.getWeather().get(0).getDescription(),
+                    currentForecast.getWeather().get(0).getIcon(),
+                    now,
+                    currentForecast.getWind().getWindSpeed(),
+                    currentForecast.getDateTime() * 1000,
+                    currentForecast.getMain().getTemperature());
 
             hourForecasts.add(forecastWeather);
         }

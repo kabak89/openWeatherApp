@@ -1,28 +1,19 @@
 package com.test.kabak.openweather.ui.addCity
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.text.Editable
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
-
 import com.test.kabak.openweather.R
-import com.test.kabak.openweather.core.Resource
-import com.test.kabak.openweather.core.storage.City
-import com.test.kabak.openweather.core.viewModels.AddCityViewModel
 import com.test.kabak.openweather.databinding.ActivityAddCityBinding
 import com.test.kabak.openweather.ui.common.BaseActivity
-import com.test.kabak.openweather.util.ListConfig
-import java.util.concurrent.TimeUnit
-
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Action
-import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_add_city) {
     private val searchAdapter= SearchAdapter()

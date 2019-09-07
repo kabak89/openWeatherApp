@@ -1,4 +1,4 @@
-package com.test.kabak.openweather.core.viewModels;
+package com.test.kabak.openweather.ui.forecast;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;

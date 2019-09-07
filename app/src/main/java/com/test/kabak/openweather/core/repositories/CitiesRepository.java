@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.network.CurrentWeatherResponse;
 import com.test.kabak.openweather.core.network.ServerApi;
+import com.test.kabak.openweather.core.network.dataClasses.CurrentWeatherResponse;
 import com.test.kabak.openweather.core.storage.City;
 import com.test.kabak.openweather.core.storage.CurrentWeather;
 import com.test.kabak.openweather.core.storage.DatabaseManager;
-import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
+import com.test.kabak.openweather.ui.list.ListWeatherObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class CitiesRepository {
     MutableLiveData<Resource<List<ListWeatherObject>>> citiesWeather = new MutableLiveData<>();
 
     public LiveData<List<City>> getCities() {
-        return DatabaseManager.getDatabase().cityDao().getAll();
+        return DatabaseManager.INSTANCE.getDb().cityDao().getAll();
     }
 
     public LiveData<Resource<List<ListWeatherObject>>> getCitiesWeather(final List<City> input) {
@@ -38,37 +38,39 @@ public class CitiesRepository {
         Single
                 .create(new SingleOnSubscribe<Resource<List<ListWeatherObject>>>() {
                     @Override
-                    public void subscribe(final SingleEmitter<Resource<List<ListWeatherObject>>> e) throws Exception {
+                    public void subscribe(final SingleEmitter<Resource<List<ListWeatherObject>>> e) {
                         final List<ListWeatherObject> result = new ArrayList<>(input.size());
                         final List<CurrentWeather> weatherToSave = new ArrayList<>(input.size());
 
                         Exception exception = null;
 
                         for (final City currentCity : input) {
-                            final String cityId = currentCity.cityId;
+                            final String cityId = currentCity.getCityId();
 
-                            CurrentWeather cachedWeather = DatabaseManager.getDatabase().currentWeatherDao().getById(cityId);
+                            CurrentWeather cachedWeather = DatabaseManager.INSTANCE.getDb().currentWeatherDao().getById(cityId);
 
                             long weatherLiveTime = 0;
 
                             if(cachedWeather != null) {
-                                weatherLiveTime = System.currentTimeMillis() - cachedWeather.timestamp;
+                                weatherLiveTime = System.currentTimeMillis() - cachedWeather.getTimestamp();
                             }
 
                             if(cachedWeather == null || weatherLiveTime > CURRENT_WEATHER_MAX_LIVE_TIME) {
-                                Single<CurrentWeatherResponse> currentWeatherSingle = ServerApi.getWeatherApi().getCurrentWeather(currentCity.cityId);
+                                Single<CurrentWeatherResponse> currentWeatherSingle = ServerApi.INSTANCE.getWeatherApi().getCurrentWeather(currentCity.getCityId());
 
                                 try {
                                     CurrentWeatherResponse currentWeatherResponse = currentWeatherSingle.blockingGet();
-                                    CurrentWeather currentWeather = new CurrentWeather();
-                                    currentWeather.cityId = cityId;
-                                    CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.weather.get(0);
-                                    currentWeather.description = weatherObject.description;
-                                    currentWeather.icon = weatherObject.icon;
-                                    currentWeather.minT = currentWeatherResponse.main.tempMin;
-                                    currentWeather.maxT = currentWeatherResponse.main.tempMax;
-                                    currentWeather.timestamp = System.currentTimeMillis();
-                                    currentWeather.windSpeed = currentWeatherResponse.wind.windSpeed;
+                                    CurrentWeatherResponse.WeatherObject weatherObject = currentWeatherResponse.getWeather().get(0);
+
+                                    CurrentWeather currentWeather = new CurrentWeather(
+                                            cityId,
+                                            currentWeatherResponse.getMain().getTempMin(),
+                                            currentWeatherResponse.getMain().getTempMax(),
+                                            weatherObject.getDescription(),
+                                            weatherObject.getIcon(),
+                                            System.currentTimeMillis(),
+                                            currentWeatherResponse.getWind().getWindSpeed()
+                                    );
 
                                     addCachedWeatherToResult(result, currentCity, currentWeather);
 
@@ -87,7 +89,7 @@ public class CitiesRepository {
                             }
                         }
 
-                        DatabaseManager.getDatabase().currentWeatherDao().insertAll(weatherToSave);
+                        DatabaseManager.INSTANCE.getDb().currentWeatherDao().insertAll(weatherToSave);
                         Resource<List<ListWeatherObject>> resultResource = new Resource<>(Resource.COMPLETED, result, exception);
                         e.onSuccess(resultResource);
                     }
@@ -118,9 +120,7 @@ public class CitiesRepository {
     }
 
     void addCachedWeatherToResult(List<ListWeatherObject> result, City currentCity, CurrentWeather cachedWeather) {
-        ListWeatherObject listWeatherObject = new ListWeatherObject();
-        listWeatherObject.city = currentCity;
-        listWeatherObject.currentWeather = cachedWeather;
+        ListWeatherObject listWeatherObject = new ListWeatherObject(currentCity, cachedWeather);
         result.add(listWeatherObject);
     }
 }

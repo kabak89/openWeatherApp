@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.test.kabak.openweather.core.viewModels.ListWeatherObject;
 import com.test.kabak.openweather.databinding.ViewCityListWeatherBinding;
 
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class CitiesAdapter extends RecyclerView.Adapter<CitiesAdapter.CityWeathe
 
     @Override
     public long getItemId(int position) {
-        return items.get(position).city.cityId.hashCode();
+        return items.get(position).getCity().getCityId().hashCode();
     }
 
     @Override

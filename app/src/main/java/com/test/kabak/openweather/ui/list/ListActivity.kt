@@ -1,26 +1,19 @@
 package com.test.kabak.openweather.ui.list
 
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import android.content.Intent
-import androidx.databinding.DataBindingUtil
-import android.os.Bundle
-import androidx.core.app.ActivityCompat
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import android.view.View
 import androidx.recyclerview.widget.DividerItemDecoration
-
 import com.test.kabak.openweather.R
 import com.test.kabak.openweather.core.Resource
-import com.test.kabak.openweather.core.viewModels.CitiesListViewModel
-import com.test.kabak.openweather.core.viewModels.ListWeatherObject
+import com.test.kabak.openweather.core.Resource.COMPLETED
 import com.test.kabak.openweather.databinding.ActivityListBinding
 import com.test.kabak.openweather.ui.addCity.AddCityActivity
-import com.test.kabak.openweather.ui.forecast.ForecastActivity
-import com.test.kabak.openweather.util.ListConfig
-
-import com.test.kabak.openweather.core.Resource.COMPLETED
 import com.test.kabak.openweather.ui.common.BaseActivity
+import com.test.kabak.openweather.ui.forecast.ForecastActivity
 
 class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
     private val citiesAdapter = CitiesAdapter()

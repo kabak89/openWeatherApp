@@ -9,7 +9,7 @@
 
         <variable
             name="item"
-            type="com.test.kabak.openweather.core.viewModels.ListWeatherObject" />
+            type="com.test.kabak.openweather.ui.list.ListWeatherObject" />
 
     </data>
 

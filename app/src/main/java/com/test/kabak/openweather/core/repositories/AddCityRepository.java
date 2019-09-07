@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.network.SearchCityResponse;
 import com.test.kabak.openweather.core.network.ServerApi;
+import com.test.kabak.openweather.core.network.dataClasses.SearchCityResponse;
 import com.test.kabak.openweather.core.storage.City;
 import com.test.kabak.openweather.core.storage.DatabaseManager;
 
@@ -48,7 +48,7 @@ public class AddCityRepository {
         return new CompletableFromAction(new Action() {
             @Override
             public void run() throws Exception {
-                DatabaseManager.getDatabase().cityDao().insert(city);
+                DatabaseManager.INSTANCE.getDb().cityDao().insert(city);
             }
         });
     }
@@ -61,7 +61,7 @@ public class AddCityRepository {
             return;
         }
 
-        Single<SearchCityResponse> searchObservable = ServerApi.getTeleportApi().getCities(searchString);
+        Single<SearchCityResponse> searchObservable = ServerApi.INSTANCE.getTeleportApi().getCities(searchString);
 
         searchObservable
                 .toObservable()
@@ -71,13 +71,12 @@ public class AddCityRepository {
                         return Observable.create(new ObservableOnSubscribe<Resource<List<City>>>() {
                             @Override
                             public void subscribe(ObservableEmitter<Resource<List<City>>> e) throws Exception {
-                                ArrayList<SearchCityResponse.SearchResult> results = searchCityResponse.embedded.searchList;
+                                ArrayList<SearchCityResponse.SearchResult> results = searchCityResponse.getEmbedded().getSearchList();
                                 List<City> cities = new ArrayList<>(results.size());
 
                                 for(SearchCityResponse.SearchResult currentResult : results) {
-                                    City city = new City();
-                                    city.name = currentResult.name;
-                                    city.cityId = DIGIT_EXTRACT_PATTERN.matcher(currentResult.links.cityItem.link).replaceAll("");
+                                    String cityId = DIGIT_EXTRACT_PATTERN.matcher(currentResult.getLinks().getCityItem().getLink()).replaceAll("");
+                                    City city = new City(cityId, currentResult.getName());
                                     cities.add(city);
                                 }
 

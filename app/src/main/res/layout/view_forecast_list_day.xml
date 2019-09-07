@@ -9,7 +9,7 @@
 
         <variable
             name="item"
-            type="com.test.kabak.openweather.core.viewModels.ForecastDay" />
+            type="com.test.kabak.openweather.ui.forecast.ForecastDay" />
 
     </data>
 
