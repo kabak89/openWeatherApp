@@ -1,7 +1,7 @@
 package com.test.kabak.openweather.core.repositories;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.CurrentWeatherResponse;

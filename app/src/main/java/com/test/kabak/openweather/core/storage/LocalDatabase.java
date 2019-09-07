@@ -1,7 +1,7 @@
 package com.test.kabak.openweather.core.storage;
 
-import android.arch.persistence.room.Database;
-import android.arch.persistence.room.RoomDatabase;
+import androidx.room.Database;
+import androidx.room.RoomDatabase;
 
 @Database(entities = {City.class, CurrentWeather.class, ForecastWeather.class}, version = 7, exportSchema = false)
 public abstract class LocalDatabase extends RoomDatabase {

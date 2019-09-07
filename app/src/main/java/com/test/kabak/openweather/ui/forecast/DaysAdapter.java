@@ -1,11 +1,10 @@
 package com.test.kabak.openweather.ui.forecast;
 
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.test.kabak.openweather.core.storage.ForecastWeather;
 import com.test.kabak.openweather.core.viewModels.ForecastDay;
 import com.test.kabak.openweather.databinding.ViewForecastListDayBinding;
 

@@ -1,9 +1,9 @@
 package com.test.kabak.openweather.ui;
 
 import android.content.Context;
-import android.databinding.BindingAdapter;
+import androidx.databinding.BindingAdapter;
 import android.net.Uri;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,7 +35,7 @@ public class CommonBindingAdapters {
         }
 
         Picasso
-                .with(imageView.getContext())
+                .get()
                 .load(Uri.parse(IMAGES_BASE_URL + url + ".png"))
                 .fit()
                 .centerCrop()

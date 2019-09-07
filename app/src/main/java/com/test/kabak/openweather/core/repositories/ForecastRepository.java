@@ -1,8 +1,8 @@
 package com.test.kabak.openweather.core.repositories;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.annotation.NonNull;
 
 import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.ForecastResponse;

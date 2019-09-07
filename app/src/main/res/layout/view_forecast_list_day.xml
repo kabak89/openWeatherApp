@@ -13,7 +13,7 @@
 
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/selector_list_weather_item"
@@ -64,7 +64,7 @@
             bind:weatherIcon="@{item.dayWeather.icon}"
             tools:src="@drawable/ic_launcher_background" />
 
-        <android.support.constraint.Guideline
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -94,6 +94,6 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:layout_marginTop="40dp"/>
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

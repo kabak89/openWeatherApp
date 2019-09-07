@@ -1,8 +1,8 @@
 package com.test.kabak.openweather.core.storage;
 
-import android.arch.persistence.room.Room;
+import androidx.room.Room;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class DatabaseManager {
     private static LocalDatabase database;
