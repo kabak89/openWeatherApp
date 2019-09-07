@@ -1,10 +1,11 @@
 package com.test.kabak.openweather.ui.addCity;
 
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.test.kabak.openweather.core.storage.City;
 import com.test.kabak.openweather.databinding.ViewSearchResultBinding;
@@ -62,7 +63,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CityBindin
 
     @Override
     public long getItemId(int position) {
-        return items.get(position).cityId.hashCode();
+        return items.get(position).getCityId().hashCode();
     }
 
     @Override
