@@ -2,10 +2,11 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
+        <import type="android.view.View" />
 
         <variable
             name="item"
@@ -16,17 +17,17 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
         android:background="@drawable/selector_list_weather_item"
-        >
+        android:paddingBottom="8dp"
+        app:toggle="@{item.clickObservable}">
 
         <TextView
             android:id="@+id/cityNameView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:text="@{item.city.name}"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintEnd_toStartOf="@+id/guideline"
@@ -40,29 +41,32 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:visibility="@{item.currentWeather == null ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintLeft_toLeftOf="@+id/cityNameView"
             app:layout_constraintTop_toBottomOf="@+id/cityNameView"
-            bind:shortDate="@{item.currentWeather.timestamp}"
+            app:shortDate="@{item.currentWeather.timestamp}"
             tools:text="12.12.2017" />
 
         <ImageView
             android:id="@+id/weatherImage"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:visibility="@{item.currentWeather == null ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toRightOf="@+id/guideline"
             app:layout_constraintRight_toLeftOf="@+id/guidelin2"
             app:layout_constraintTop_toTopOf="parent"
-            bind:weatherIcon="@{item.currentWeather.icon}"
+            app:weatherIcon="@{item.currentWeather.icon}"
             tools:src="@drawable/ic_launcher_background" />
 
         <TextView
             android:id="@+id/descriptionView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
             android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
             android:text="@{item.currentWeather.description}"
+            android:visibility="@{item.currentWeather == null ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintLeft_toRightOf="@+id/guideline"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/weatherImage"
@@ -72,9 +76,10 @@
             android:id="@+id/windSpeedLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
             android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
             android:text='@{@string/wind_speed_prefix + " " + String.valueOf(item.currentWeather.windSpeed) + " " + @string/wind_speed_postfix}'
+            android:visibility="@{item.currentWeather == null ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintLeft_toRightOf="@+id/guideline"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/descriptionView"
@@ -87,6 +92,7 @@
             android:layout_marginTop="8dp"
             android:text='@{String.format("%.0f", item.currentWeather.minT) + "°"}'
             android:textAppearance="@style/TextAppearance.AppCompat.Tooltip"
+            android:visibility="@{item.currentWeather == null ? View.INVISIBLE : View.VISIBLE}"
             app:layout_constraintLeft_toRightOf="@+id/guidelin2"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="- 123" />
@@ -104,6 +110,37 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_end="50dp" />
+
+        <TextView
+            android:id="@+id/forecatNotAvailableLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/error_forecast_not_available"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/colorAccent"
+            android:visibility="@{item.currentWeather == null ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cityNameView" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/bottomBarrier"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="windSpeedLabel,timestampLabel,forecatNotAvailableLabel" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/error_forecast_is_outdated"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/colorAccent"
+            android:visibility="@{item.currentWeather != null &amp;&amp; item.currentWeather.isOutdated() ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bottomBarrier" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

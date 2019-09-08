@@ -2,91 +2,79 @@ package com.test.kabak.openweather.ui.list
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.test.kabak.openweather.R
-import com.test.kabak.openweather.core.Resource
-import com.test.kabak.openweather.core.Resource.COMPLETED
+import com.test.kabak.openweather.core.common.ErrorInteractor
 import com.test.kabak.openweather.databinding.ActivityListBinding
 import com.test.kabak.openweather.ui.addCity.AddCityActivity
 import com.test.kabak.openweather.ui.common.BaseActivity
+import com.test.kabak.openweather.ui.common.Event
+import com.test.kabak.openweather.ui.common.UniversalAdapter
+import com.test.kabak.openweather.ui.common.addOnArrayListChangedCallback
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
 
 class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
-    private val citiesAdapter = CitiesAdapter()
+    private val citiesAdapter = UniversalAdapter()
     private lateinit var viewModel: CitiesListViewModel
-    private val observer = ListResourceObserver()
+
+    init {
+        citiesAdapter.addDelegate(CitiesAdapterDelegate())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding.handler = this
+        viewModel = ViewModelProviders.of(this).get(CitiesListViewModel::class.java)
 
-        citiesAdapter.setListener { listWeatherObject ->
-            val intent = Intent(this@ListActivity, ForecastActivity::class.java)
-            val bundle = Bundle()
-            bundle.putString(CITY_ID_KEY, listWeatherObject.city.cityId)
-            intent.putExtras(bundle)
-            ActivityCompat.startActivity(this@ListActivity, intent, null)
-        }
+        binding.viewModel = viewModel
 
         binding.citiesListView.adapter = citiesAdapter
-
         binding.citiesListView.setHasFixedSize(true)
 
         val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         binding.citiesListView.addItemDecoration(dividerItemDecoration)
 
-        binding.refreshLayout.isEnabled = false
-        binding.tryAgainLabel.visibility = View.INVISIBLE
+        viewModel.stateLiveData.observe(this, Observer<CitiesListViewModel.State?> { state ->
+            state?.let {
+                citiesAdapter.setItems(state.cities)
 
-        binding.refreshLayout.setOnRefreshListener { viewModel.listWeather.observe(this@ListActivity, observer) }
+                state.cities.addOnArrayListChangedCallback {
+                    citiesAdapter.setItems(state.cities)
+                }
+            }
+        })
 
-        viewModel = ViewModelProviders.of(this).get(CitiesListViewModel::class.java)
+        viewModel.errorsLiveData.observe(this, Observer<Event<Exception>?> { event ->
+            event?.getContentIfNotHandled()?.let {
+                ErrorInteractor.handleError(it, this@ListActivity, binding.root)
+            }
+        })
+
+        viewModel.goAddCityLiveData.observe(this, Observer<Event<Boolean>?> { event ->
+            event?.getContentIfNotHandled()?.let {
+                val intent = Intent(this@ListActivity, AddCityActivity::class.java)
+                ActivityCompat.startActivity(this@ListActivity, intent, null)
+            }
+        })
+
+        viewModel.goCityDetailsLiveData.observe(this, Observer<Event<ListWeatherObject>?> { event ->
+            event?.getContentIfNotHandled()?.let { listWeatherObject ->
+                val intent = Intent(this@ListActivity, ForecastActivity::class.java)
+                val bundle = Bundle()
+                bundle.putString(CITY_ID_KEY, listWeatherObject.city.cityId)
+                intent.putExtras(bundle)
+                ActivityCompat.startActivity(this@ListActivity, intent, null)
+            }
+        })
     }
 
     override fun onStart() {
         super.onStart()
 
-        viewModel.listWeather.observe(this, observer)
-    }
-
-    fun addCityClick(v: View) {
-        val intent = Intent(this, AddCityActivity::class.java)
-        ActivityCompat.startActivity(this, intent, null)
-    }
-
-    private inner class ListResourceObserver : Observer<Resource<List<ListWeatherObject>>> {
-        override fun onChanged(listResource: Resource<List<ListWeatherObject>>?) {
-
-            if (listResource == null) {
-                return
-            }
-
-            if (listResource.status == COMPLETED) {
-                binding.refreshLayout.isRefreshing = false
-
-                if (listResource.exception != null) {
-                    binding.tryAgainLabel.visibility = View.VISIBLE
-                    binding.refreshLayout.isEnabled = true
-
-                    if (listResource.data != null) {
-                        citiesAdapter.setItems(listResource.data)
-                    }
-                } else {
-                    citiesAdapter.setItems(listResource.data)
-                    binding.tryAgainLabel.visibility = View.GONE
-                    binding.refreshLayout.isEnabled = false
-                }
-            } else if (listResource.status == Resource.LOADING) {
-                binding.refreshLayout.isRefreshing = true
-                binding.tryAgainLabel.visibility = View.GONE
-                binding.refreshLayout.isEnabled = false
-            }
-        }
+        viewModel.loadData()
     }
 
     companion object {

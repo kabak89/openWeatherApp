@@ -2,9 +2,11 @@ package com.test.kabak.openweather.ui
 
 import android.net.Uri
 import android.text.format.DateUtils
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import androidx.databinding.ObservableBoolean
 import com.squareup.picasso.Picasso
 import com.test.kabak.openweather.R
 import com.test.kabak.openweather.core.network.Constants.IMAGES_BASE_URL
@@ -44,4 +46,15 @@ fun setMonthDayTimestamp(textView: TextView, timestamp: Long) {
 fun setWeekDayTimestamp(textView: TextView, timestamp: Long) {
     val simpleDateFormat = SimpleDateFormat("EEEE", Locale.getDefault())
     textView.text = simpleDateFormat.format(Date(timestamp))
+}
+
+@BindingAdapter("toggle")
+fun toggle(view: View, booleanObservable: ObservableBoolean?) {
+    if (booleanObservable == null) {
+        return
+    }
+
+    view.setOnClickListener {
+        booleanObservable.set(!booleanObservable.get())
+    }
 }

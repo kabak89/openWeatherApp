@@ -8,12 +8,17 @@ import com.test.kabak.openweather.R
 import com.test.kabak.openweather.core.Resource
 import com.test.kabak.openweather.databinding.ActivityForecastBinding
 import com.test.kabak.openweather.ui.common.BaseActivity
+import com.test.kabak.openweather.ui.common.UniversalAdapter
 import com.test.kabak.openweather.ui.list.ListActivity.Companion.CITY_ID_KEY
 
 class ForecastActivity : BaseActivity<ActivityForecastBinding>(R.layout.activity_forecast) {
     private lateinit var viewModel: ForecastViewModel
-    private val citiesAdapter = DaysAdapter()
+    private val citiesAdapter = UniversalAdapter()
     var cityId: String? = null
+
+    init {
+        citiesAdapter.addDelegate(DaysAdapterDelegate())
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

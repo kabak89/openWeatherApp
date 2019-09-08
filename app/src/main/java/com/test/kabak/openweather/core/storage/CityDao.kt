@@ -9,7 +9,10 @@ import androidx.room.Query
 @Dao
 interface CityDao {
     @get:Query("SELECT * FROM city")
-    val all: LiveData<List<City>>
+    val loadAll: LiveData<List<City>>
+
+    @get:Query("SELECT * FROM city")
+    val loadAllSynchronous: List<City>
 
     @Insert(onConflict = REPLACE)
     fun insert(newCity: City)

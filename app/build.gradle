@@ -85,4 +85,6 @@ dependencies {
 
     api 'com.github.marcinmoskala.activitystarter:activitystarter:1.11-beta'
     kapt 'com.github.marcinmoskala.activitystarter:activitystarter-compiler:1.11-beta'
+
+    implementation 'com.jakewharton.timber:timber:4.7.0'
 }
