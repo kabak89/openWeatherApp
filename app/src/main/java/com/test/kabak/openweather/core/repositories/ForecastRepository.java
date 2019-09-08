@@ -32,7 +32,6 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class ForecastRepository {
-    public static final long FORECAST_LIVE_TIME = System.currentTimeMillis() - 1000 * 60 * 30;
     MutableLiveData<Resource<ForecastDayObject>> data = new MutableLiveData<>();
 
     public LiveData<Resource<ForecastDayObject>> getForecast(final String cityId) {
@@ -42,7 +41,7 @@ public class ForecastRepository {
                 .create(new SingleOnSubscribe<List<ForecastWeather>>() {
                     @Override
                     public void subscribe(SingleEmitter<List<ForecastWeather>> e) throws Exception {
-                        List<ForecastWeather> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, FORECAST_LIVE_TIME);
+                        List<ForecastWeather> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, getForecastMaxLiveTime());
                         if (cachedForecast.isEmpty()) {
                             e.onError(new Exception("Empty database"));
                         } else {
@@ -71,6 +70,10 @@ public class ForecastRepository {
                 });
 
         return data;
+    }
+
+    private long getForecastMaxLiveTime() {
+        return System.currentTimeMillis() - 1000 * 60 * 30;
     }
 
     void downloadForecast(final String cityId) {

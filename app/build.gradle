@@ -87,4 +87,8 @@ dependencies {
     kapt 'com.github.marcinmoskala.activitystarter:activitystarter-compiler:1.11-beta'
 
     implementation 'com.jakewharton.timber:timber:4.7.0'
+
+    def work_version = "1.0.1"
+
+    implementation "android.arch.work:work-runtime-ktx:$work_version"
 }

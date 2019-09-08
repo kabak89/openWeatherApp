@@ -44,15 +44,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CityBindin
     public CityBindingHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ViewSearchResultBinding binding = ViewSearchResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         CityBindingHolder cityBindingHolder = new CityBindingHolder(binding);
-
         cityBindingHolder.itemView.setOnClickListener(new ItemOnClickListener(cityBindingHolder));
-
-        RecyclerView.LayoutParams layoutParams
-                = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT,
-                RecyclerView.LayoutParams.WRAP_CONTENT);
-
-        cityBindingHolder.itemView.setLayoutParams(layoutParams);
-
         return cityBindingHolder;
     }
 

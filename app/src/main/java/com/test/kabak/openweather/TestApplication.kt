@@ -1,10 +1,10 @@
 package com.test.kabak.openweather
 
 import android.app.Application
+import com.test.kabak.openweather.core.schedulers.UpdateScheduler
 
 import com.test.kabak.openweather.core.storage.DatabaseManager
 import timber.log.Timber
-
 
 class TestApplication : Application() {
     override fun onCreate() {
@@ -15,5 +15,6 @@ class TestApplication : Application() {
         }
 
         DatabaseManager.init(this)
+        UpdateScheduler.scheduleUpdate()
     }
 }
