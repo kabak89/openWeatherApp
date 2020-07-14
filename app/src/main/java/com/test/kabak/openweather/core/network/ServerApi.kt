@@ -43,7 +43,7 @@ object ServerApi {
                         .addInterceptor(HttpLoggingInterceptor().setLevel(if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE))
                         .addInterceptor { chain ->
                             val original = chain.request()
-                            val originalHttpUrl = original.url()
+                            val originalHttpUrl = original.url
 
                             val url = originalHttpUrl.newBuilder()
                                     .addQueryParameter("appid", "3edcc798fa2769cd37362534cc6e5a78")
