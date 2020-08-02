@@ -18,69 +18,69 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class CitiesListViewModel(application: Application) : BaseViewModel(application) {
-    val stateLiveData by lazy { MutableLiveData<State>(State()) }
+    private val state = State()
+    val stateLiveData by lazy { MutableLiveData<State>(state) }
     val errorsLiveData by lazy { MutableLiveData<Event<Exception>>() }
     val goAddCityLiveData by lazy { MutableLiveData<Event<Boolean>>() }
     val goCityDetailsLiveData by lazy { MutableLiveData<Event<ListWeatherObject>>() }
 
     init {
-        stateLiveData.value?.let { nonNullState ->
-            nonNullState.addCityClickObservable.addOnPropertyChanged {
-                goAddCityLiveData.value = Event(true)
-            }
+        state.addCityClickObservable.addOnPropertyChanged {
+            goAddCityLiveData.value = Event(true)
         }
     }
 
     fun loadData() {
         scope.launch {
             try {
-                stateLiveData.value?.let { nonNullState ->
-                    nonNullState.loadingObservable.set(true)
+                state.loadingObservable.set(true)
 
-                    scope.launch(Dispatchers.Main) {
-                        nonNullState.cities.clear()
-                    }.join()
+                scope.launch(Dispatchers.Main) {
+                    state.cities.clear()
+                }.join()
 
-                    val cities = DatabaseManager.getDb().cityDao().loadAllSynchronous
+                val cities = DatabaseManager.getDb().cityDao().loadAllSynchronous
 
-                    cities.forEach { currentCity ->
-                        val cityId = currentCity.cityId
-                        var weather = DatabaseManager.getDb().currentWeatherDao().getById(cityId)
+                cities.forEach { currentCity ->
+                    val cityId = currentCity.cityId
+                    var weather = DatabaseManager.getDb().currentWeatherDao().getById(cityId)
 
-                        if (weather == null || weather.isOutdated()) {
-                            scope.launch(Dispatchers.Main) {
-                                nonNullState.cities.add(buildListWeatherObject(currentCity, weather))
-                            }.join()
-
-                            val weatherResponse: CurrentWeatherResponse
-
-                            try {
-                                weatherResponse = ServerApi.weatherApi.getCurrentWeather(cityId).await()
-                                weather = CurrentWeather.buildFromServerResponse(cityId, weatherResponse)
-                                DatabaseManager.getDb().currentWeatherDao().insert(weather)
-                            } catch (exception: Exception) {
-                                Timber.e(exception)
-                            }
-                        }
-
-                        val listWeatherObject = buildListWeatherObject(currentCity, weather)
-                        val existedCity = nonNullState.cities.find { it.city.cityId == cityId }
-
+                    if (weather == null || weather.isOutdated()) {
                         scope.launch(Dispatchers.Main) {
-                            nonNullState.cities.remove(existedCity)
-                            nonNullState.cities.add(listWeatherObject)
+                            state.cities.add(buildListWeatherObject(currentCity, weather))
                         }.join()
+
+                        val weatherResponse: CurrentWeatherResponse
+
+                        try {
+                            weatherResponse = ServerApi.weatherApi.getCurrentWeather(cityId).await()
+                            weather = CurrentWeather.buildFromServerResponse(cityId, weatherResponse)
+                            DatabaseManager.getDb().currentWeatherDao().insert(weather)
+                        } catch (exception: Exception) {
+                            Timber.e(exception)
+                        }
                     }
 
-                    nonNullState.loadingObservable.set(false)
+                    val listWeatherObject = buildListWeatherObject(currentCity, weather)
+                    val existedCity = state.cities.find { it.city.cityId == cityId }
+
+                    scope.launch(Dispatchers.Main) {
+                        state.cities.remove(existedCity)
+                        state.cities.add(listWeatherObject)
+                    }.join()
                 }
+
+                state.loadingObservable.set(false)
             } catch (exception: Exception) {
                 errorsLiveData.postValue(Event(ErrorConverter.convertError(exception)))
             }
         }
     }
 
-    private fun buildListWeatherObject(currentCity: City, weather: CurrentWeather?): ListWeatherObject {
+    private fun buildListWeatherObject(
+            currentCity: City,
+            weather: CurrentWeather?
+    ): ListWeatherObject {
         val listWeatherObject = ListWeatherObject(currentCity, weather)
 
         listWeatherObject.clickObservable.addOnPropertyChanged {
