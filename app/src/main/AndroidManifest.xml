@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.test.kabak.openweather">
 
-    <uses-permission
-        android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name="TestApplication"
@@ -14,7 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.list.ListActivity">
+        <activity
+            android:name=".ui.list.ListActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,10 +24,12 @@
         </activity>
 
         <activity
-            android:name=".ui.addCity.AddCityActivity"/>
+            android:name=".ui.addCity.AddCityActivity"
+            android:exported="false" />
 
         <activity
-            android:name=".ui.forecast.ForecastActivity"/>
+            android:name=".ui.forecast.ForecastActivity"
+            android:exported="false" />
 
     </application>
 

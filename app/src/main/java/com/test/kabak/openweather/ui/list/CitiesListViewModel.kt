@@ -19,7 +19,7 @@ import timber.log.Timber
 
 class CitiesListViewModel(application: Application) : BaseViewModel(application) {
     private val state = State()
-    val stateLiveData by lazy { MutableLiveData<State>(state) }
+    val stateLiveData by lazy { MutableLiveData(state) }
     val errorsLiveData by lazy { MutableLiveData<Event<Exception>>() }
     val goAddCityLiveData by lazy { MutableLiveData<Event<Boolean>>() }
     val goCityDetailsLiveData by lazy { MutableLiveData<Event<ListWeatherObject>>() }

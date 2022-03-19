@@ -3,7 +3,6 @@ package com.test.kabak.openweather.ui.list
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.test.kabak.openweather.R
@@ -11,7 +10,6 @@ import com.test.kabak.openweather.core.common.ErrorInteractor
 import com.test.kabak.openweather.databinding.ActivityListBinding
 import com.test.kabak.openweather.ui.addCity.AddCityActivity
 import com.test.kabak.openweather.ui.common.BaseActivity
-import com.test.kabak.openweather.ui.common.Event
 import com.test.kabak.openweather.ui.common.UniversalAdapter
 import com.test.kabak.openweather.ui.common.addOnArrayListChangedCallback
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
@@ -37,7 +35,7 @@ class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
         val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         binding.citiesListView.addItemDecoration(dividerItemDecoration)
 
-        viewModel.stateLiveData.observe(this, Observer<CitiesListViewModel.State?> { state ->
+        viewModel.stateLiveData.observe(this) { state ->
             state?.let {
                 citiesAdapter.setItems(state.cities)
 
@@ -45,22 +43,22 @@ class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
                     citiesAdapter.setItems(state.cities)
                 }
             }
-        })
+        }
 
-        viewModel.errorsLiveData.observe(this, Observer<Event<Exception>?> { event ->
+        viewModel.errorsLiveData.observe(this) { event ->
             event?.getContentIfNotHandled()?.let {
                 ErrorInteractor.handleError(it, this@ListActivity, binding.root)
             }
-        })
+        }
 
-        viewModel.goAddCityLiveData.observe(this, Observer<Event<Boolean>?> { event ->
+        viewModel.goAddCityLiveData.observe(this) { event ->
             event?.getContentIfNotHandled()?.let {
                 val intent = Intent(this@ListActivity, AddCityActivity::class.java)
                 ActivityCompat.startActivity(this@ListActivity, intent, null)
             }
-        })
+        }
 
-        viewModel.goCityDetailsLiveData.observe(this, Observer<Event<ListWeatherObject>?> { event ->
+        viewModel.goCityDetailsLiveData.observe(this) { event ->
             event?.getContentIfNotHandled()?.let { listWeatherObject ->
                 val intent = Intent(this@ListActivity, ForecastActivity::class.java)
                 val bundle = Bundle()
@@ -68,7 +66,7 @@ class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
                 intent.putExtras(bundle)
                 ActivityCompat.startActivity(this@ListActivity, intent, null)
             }
-        })
+        }
     }
 
     override fun onStart() {
@@ -78,6 +76,6 @@ class ListActivity : BaseActivity<ActivityListBinding>(R.layout.activity_list) {
     }
 
     companion object {
-        val CITY_ID_KEY = "CITY_ID_KEY"
+        const val CITY_ID_KEY = "CITY_ID_KEY"
     }
 }
