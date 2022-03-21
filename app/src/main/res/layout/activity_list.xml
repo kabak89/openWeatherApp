@@ -22,8 +22,7 @@
             android:id="@+id/refreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:OnRefreshListener="@{() -> viewModel.loadData()}"
-            app:refreshing="@{viewModel.stateLiveData.loadingObservable}">
+            app:OnRefreshListener="@{() -> viewModel.loadData()}">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/citiesListView"
@@ -46,8 +45,7 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_add_white_24px"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:toggle="@{viewModel.stateLiveData.addCityClickObservable}" />
+            app:layout_constraintRight_toRightOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

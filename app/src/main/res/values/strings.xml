@@ -7,6 +7,7 @@
 
     <string name="wind_speed_prefix">Wind: </string>
     <string name="wind_speed_postfix">m/s</string>
+    <string name="wind_speed_template">Wind: %s m/s</string>
 
     <string name="error_network">Network connection unavailable</string>
     <string name="error_unknown">Unknown error</string>
