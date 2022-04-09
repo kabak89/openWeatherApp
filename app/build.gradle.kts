@@ -84,6 +84,8 @@ dependencies {
 
     implementation("androidx.work:work-runtime-ktx:2.7.1")
 
+    implementation("androidx.core:core-splashscreen:1.0.0-beta02")
+
     //Compose
     // Integration with activities
     implementation("androidx.activity:activity-compose:1.4.0")

@@ -3,8 +3,8 @@ package com.test.kabak.openweather.ui.list
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -34,13 +34,13 @@ import com.test.kabak.openweather.ui.common.dividerColor
 import com.test.kabak.openweather.ui.common.textColor
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
 
-class ListActivity : AppCompatActivity() {
+class ListActivity : ComponentActivity() {
     private lateinit var viewModel: CitiesListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProviders.of(this).get(CitiesListViewModel::class.java)
+        viewModel = ViewModelProvider(this)[CitiesListViewModel::class.java]
 
         setContent {
             MyTheme {
