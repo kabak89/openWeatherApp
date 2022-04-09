@@ -32,10 +32,6 @@ android {
         enabled = true
     }
 
-    lintOptions {
-        abortOnError false
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -43,6 +39,7 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+        freeCompilerArgs += '-Xbackend-threads -2'
     }
 
     buildFeatures {
@@ -51,7 +48,11 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.2.0-alpha07'
+    }
+
+    lint {
+        abortOnError false
     }
 }
 
@@ -115,9 +116,9 @@ dependencies {
     // UI Tests
     androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.1.1'
     // When using a MDC theme
-    implementation "com.google.android.material:compose-theme-adapter:1.1.5"
+    implementation "com.google.android.material:compose-theme-adapter:1.1.6"
 
-    implementation 'androidx.compose.runtime:runtime-livedata:1.2.0-alpha05'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.2.0-alpha07'
     //SwipeToRefresh
     implementation "com.google.accompanist:accompanist-swiperefresh:0.24.4-alpha"
     //Image loading

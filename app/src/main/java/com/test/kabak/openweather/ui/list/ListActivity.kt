@@ -1,7 +1,6 @@
 package com.test.kabak.openweather.ui.list
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import androidx.activity.compose.setContent
@@ -57,7 +56,6 @@ class ListActivity : AppCompatActivity() {
     }
 
     @Composable
-    @Preview
     private fun MyScreen(
     ) {
         val state by viewModel.stateLiveData.observeAsState()
@@ -111,7 +109,10 @@ class ListActivity : AppCompatActivity() {
     @Preview
     private fun CityItem(@PreviewParameter(CitiItemProvider::class) item: ListWeatherObject) {
         Box(modifier = Modifier
-            .clickable { goDetails(item) }) {
+            .clickable { goDetails(item) }
+            .fillMaxWidth()
+            .wrapContentHeight()
+        ) {
             Box(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -149,7 +150,7 @@ class ListActivity : AppCompatActivity() {
                                         modifier = Modifier
                                             .width(40.dp)
                                             .height(40.dp),
-                                        model = Uri.parse("${Constants.IMAGES_BASE_URL}${currentWeather.icon}.png"),
+                                        model = "${Constants.IMAGES_BASE_URL}${currentWeather.icon}.png",
                                         contentDescription = null,
                                     )
 
