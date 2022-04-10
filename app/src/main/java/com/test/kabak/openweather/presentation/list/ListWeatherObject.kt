@@ -1,4 +1,4 @@
-package com.test.kabak.openweather.ui.list
+package com.test.kabak.openweather.presentation.list
 
 import com.test.kabak.openweather.core.storage.City
 import com.test.kabak.openweather.core.storage.CurrentWeather

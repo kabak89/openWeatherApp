@@ -8,9 +8,10 @@ import com.test.kabak.openweather.core.storage.CurrentWeather
 import com.test.kabak.openweather.core.storage.DatabaseManager
 import kotlinx.coroutines.coroutineScope
 
-class UpdateForecastDataWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+class UpdateForecastDataWorker(context: Context, workerParams: WorkerParameters) :
+    CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result = coroutineScope {
-        val cities = DatabaseManager.getDb().cityDao().loadAllSynchronous
+        val cities = DatabaseManager.getDb().cityDao().loadAllSynchronous()
 
         cities.forEach { currentCity ->
             val cityId = currentCity.cityId
@@ -28,4 +29,3 @@ class UpdateForecastDataWorker(context: Context, workerParams: WorkerParameters)
 
 
 }
-

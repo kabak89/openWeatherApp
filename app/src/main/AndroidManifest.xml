@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".ui.list.ListActivity"
+            android:name="com.test.kabak.openweather.presentation.list.CitiesListActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Starting">
             <intent-filter>

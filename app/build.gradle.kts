@@ -45,6 +45,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":mvvm"))
+
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${InfrastructureVersions.kotlin}")
 
     implementation("androidx.appcompat:appcompat:1.4.1")
@@ -62,23 +64,24 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${LibVersions.coroutines}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${LibVersions.coroutines}")
 
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.1")
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
 
-    implementation("androidx.room:room-runtime:2.4.2")
-    kapt("androidx.room:room-compiler:2.4.2")
+    implementation("androidx.room:room-runtime:${LibVersions.room}")
+    implementation("androidx.room:room-ktx:${LibVersions.room}")
+    kapt("androidx.room:room-compiler:${LibVersions.room}")
 
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("io.reactivex.rxjava2:rxjava:2.2.13")
 
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${LibVersions.viewModel}")
 
     implementation("com.jakewharton.timber:timber:4.7.1")
 

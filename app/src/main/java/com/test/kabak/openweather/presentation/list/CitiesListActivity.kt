@@ -1,4 +1,4 @@
-package com.test.kabak.openweather.ui.list
+package com.test.kabak.openweather.presentation.list
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,8 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +34,7 @@ import com.test.kabak.openweather.ui.common.dividerColor
 import com.test.kabak.openweather.ui.common.textColor
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
 
-class ListActivity : ComponentActivity() {
+class CitiesListActivity : ComponentActivity() {
     private lateinit var viewModel: CitiesListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,27 +48,25 @@ class ListActivity : ComponentActivity() {
             }
         }
 
-        viewModel.errorsLiveData.observe(this) { event ->
-            event?.getContentIfNotHandled()?.let {
+        //TODO
+//        viewModel.errorsLiveData.observe(this) { event ->
+//            event?.getContentIfNotHandled()?.let {
 //                ErrorInteractor.handleError(it, this@ListActivity, binding.root)
-            }
-        }
+//            }
+//        }
     }
 
     @Composable
     private fun MyScreen(
     ) {
-        val state by viewModel.stateLiveData.observeAsState()
-
-        val stateToWork = state
-        stateToWork ?: return
+        val state by viewModel.viewState.collectAsState()
 
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        val intent = Intent(this@ListActivity, AddCityActivity::class.java)
-                        ActivityCompat.startActivity(this@ListActivity, intent, null)
+                        val intent = Intent(this@CitiesListActivity, AddCityActivity::class.java)
+                        ActivityCompat.startActivity(this@CitiesListActivity, intent, null)
                     },
                     backgroundColor = MaterialTheme.colors.primary,
                     content = {
@@ -81,15 +79,15 @@ class ListActivity : ComponentActivity() {
                 )
             },
             content = {
-                CitiesList(stateToWork)
+                CitiesList(state)
             }
         )
     }
 
     @Composable
-    private fun CitiesList(stateToWork: CitiesListViewModel.State) {
+    private fun CitiesList(state: CitiesListState) {
         SwipeRefresh(
-            state = rememberSwipeRefreshState(stateToWork.isLoading),
+            state = rememberSwipeRefreshState(state.isLoading),
             onRefresh = { viewModel.loadData() },
         ) {
             LazyColumn(
@@ -97,7 +95,7 @@ class ListActivity : ComponentActivity() {
                     .fillMaxWidth()
                     .fillMaxHeight()
             ) {
-                items(items = stateToWork.cities, itemContent = {
+                items(items = state.cities, itemContent = {
                     CityItem(it)
                     Divider(color = MaterialTheme.colors.dividerColor)
                 })
@@ -181,21 +179,21 @@ class ListActivity : ComponentActivity() {
     }
 
     private fun goDetails(item: ListWeatherObject) {
-        val intent = Intent(this@ListActivity, ForecastActivity::class.java)
+        val intent = Intent(this@CitiesListActivity, ForecastActivity::class.java)
         val bundle = Bundle()
         bundle.putString(CITY_ID_KEY, item.city.cityId)
         intent.putExtras(bundle)
-        ActivityCompat.startActivity(this@ListActivity, intent, null)
+        ActivityCompat.startActivity(this@CitiesListActivity, intent, null)
     }
 
     private fun formatShortDate(currentWeather: CurrentWeather): String {
         val time = DateUtils.formatDateTime(
-            this@ListActivity,
+            this@CitiesListActivity,
             currentWeather.timestamp,
             DateUtils.FORMAT_SHOW_TIME
         )
         val date = DateUtils.formatDateTime(
-            this@ListActivity,
+            this@CitiesListActivity,
             currentWeather.timestamp,
             DateUtils.FORMAT_NUMERIC_DATE
         )
@@ -221,12 +219,6 @@ class ListActivity : ComponentActivity() {
                 currentWeather = null,
             )
         ).asSequence()
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        viewModel.loadData()
     }
 
     companion object {

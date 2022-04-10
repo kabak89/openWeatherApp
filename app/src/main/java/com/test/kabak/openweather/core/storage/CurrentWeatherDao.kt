@@ -8,11 +8,11 @@ import androidx.room.Query
 @Dao
 interface CurrentWeatherDao {
     @Insert(onConflict = REPLACE)
-    fun insertAll(weatherArray: List<CurrentWeather>)
+    suspend fun insertAll(weatherArray: List<CurrentWeather>)
 
     @Insert(onConflict = REPLACE)
-    fun insert(weatherArray: CurrentWeather)
+    suspend fun insert(weatherArray: CurrentWeather)
 
     @Query("SELECT * FROM CurrentWeather where cityId = :cityId")
-    fun getById(cityId: String): CurrentWeather?
+    suspend fun getById(cityId: String): CurrentWeather?
 }
