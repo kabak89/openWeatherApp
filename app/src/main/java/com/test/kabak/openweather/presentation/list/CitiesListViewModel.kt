@@ -5,14 +5,17 @@ import com.test.kabak.openweather.core.network.ServerApi
 import com.test.kabak.openweather.core.storage.City
 import com.test.kabak.openweather.core.storage.CurrentWeather
 import com.test.kabak.openweather.core.storage.DatabaseManager
+import com.test.kabak.openweather.core.storage.LocalDatabase
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class CitiesListViewModel : com.example.mvvm.BaseViewModel<CitiesListState, CitiesListEvent>() {
+class CitiesListViewModel(
+    private val db: LocalDatabase,
+) : com.example.mvvm.BaseViewModel<CitiesListState, CitiesListEvent>() {
     init {
-        DatabaseManager.getDb().cityDao().citiesFlow()
+        db.cityDao().citiesFlow()
             .onEach { loadData() }
             .launchIn(viewModelScope)
 
@@ -34,7 +37,7 @@ class CitiesListViewModel : com.example.mvvm.BaseViewModel<CitiesListState, Citi
                     )
                 }
 
-                val cachedWeather = DatabaseManager.getDb().cityDao().loadAllSynchronous()
+                val cachedWeather = db.cityDao().loadAllSynchronous()
                     .map { currentCity ->
                         val cityId = currentCity.cityId
                         val weather = DatabaseManager.getDb().currentWeatherDao().getById(cityId)
@@ -71,9 +74,4 @@ class CitiesListViewModel : com.example.mvvm.BaseViewModel<CitiesListState, Citi
         currentCity: City,
         weather: CurrentWeather?,
     ): ListWeatherObject = ListWeatherObject(currentCity, weather)
-
-    data class State(
-        val cities: List<ListWeatherObject>,
-        val isLoading: Boolean,
-    )
 }

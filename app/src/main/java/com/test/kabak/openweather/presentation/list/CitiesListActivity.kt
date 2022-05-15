@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -33,14 +32,15 @@ import com.test.kabak.openweather.ui.common.MyTheme
 import com.test.kabak.openweather.ui.common.dividerColor
 import com.test.kabak.openweather.ui.common.textColor
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class CitiesListActivity : ComponentActivity() {
-    private lateinit var viewModel: CitiesListViewModel
+    private val vm by lazy(mode = LazyThreadSafetyMode.NONE) {
+        getViewModel<CitiesListViewModel>()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel = ViewModelProvider(this)[CitiesListViewModel::class.java]
 
         setContent {
             MyTheme {
@@ -57,9 +57,8 @@ class CitiesListActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun MyScreen(
-    ) {
-        val state by viewModel.viewState.collectAsState()
+    private fun MyScreen() {
+        val state by vm.viewState.collectAsState()
 
         Scaffold(
             floatingActionButton = {
@@ -85,10 +84,12 @@ class CitiesListActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun CitiesList(state: CitiesListState) {
+    private fun CitiesList(
+        state: CitiesListState,
+    ) {
         SwipeRefresh(
             state = rememberSwipeRefreshState(state.isLoading),
-            onRefresh = { viewModel.loadData() },
+            onRefresh = { vm.loadData() },
         ) {
             LazyColumn(
                 Modifier
