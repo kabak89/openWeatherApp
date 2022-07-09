@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "io.qameta.allure.android.runners.AllureAndroidJUnitRunner"
     }
 
     buildTypes {
@@ -121,9 +121,18 @@ dependencies {
     testImplementation("io.insert-koin:koin-test:${LibVersions.koin}")
     testImplementation("io.insert-koin:koin-test-jvm:${LibVersions.koin}")
 
-    //Test
+    //Unit Tests
     testImplementation("junit:junit:4.13.2")
     testImplementation("io.mockk:mockk:1.12.4")
+
+    //UI Tests
+    androidTestImplementation("com.kaspersky.android-components:kaspresso:1.4.1")
+    androidTestImplementation("com.kaspersky.android-components:kaspresso-allure-support:1.4.1")
+
+    androidTestImplementation("io.qameta.allure:allure-kotlin-commons:2.2.7")
+    androidTestImplementation("io.qameta.allure:allure-kotlin-model:2.2.7")
+    androidTestImplementation("io.qameta.allure:allure-kotlin-junit4:2.2.7")
+    androidTestImplementation("io.qameta.allure:allure-kotlin-android:2.2.7")
 }
 
 // Проверка модулей koin во время сборки проекта
