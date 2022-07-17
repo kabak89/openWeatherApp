@@ -2,6 +2,7 @@ package com.test.kabak.openweather.core.storage
 
 import android.content.Context
 import androidx.room.Room
+import com.test.kabak.openweather.data.db.LocalDatabase
 
 object DatabaseManager {
     private var database: LocalDatabase? = null

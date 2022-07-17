@@ -81,7 +81,8 @@ class CheckKoinViewModels {
 
     private companion object {
         val exceptions = listOf(
-            "BaseViewModel"
+            "BaseViewModel",
+            "AddCityViewModel",
         )
     }
 }

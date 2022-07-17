@@ -1,6 +1,8 @@
 include(":app")
 include(":mvvm")
 
+include(":common:util")
+
 plugins {
     id("com.gradle.enterprise") version ("3.9")
 }

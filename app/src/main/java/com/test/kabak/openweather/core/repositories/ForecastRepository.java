@@ -8,8 +8,8 @@ import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.ServerApi;
 import com.test.kabak.openweather.core.network.dataClasses.ForecastResponse;
 import com.test.kabak.openweather.core.storage.DatabaseManager;
-import com.test.kabak.openweather.core.storage.ForecastWeather;
-import com.test.kabak.openweather.core.storage.ForecastWeather.ForecastWeatherComparator;
+import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable;
+import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable.ForecastWeatherComparator;
 import com.test.kabak.openweather.ui.forecast.ForecastDay;
 import com.test.kabak.openweather.ui.forecast.ForecastDay.ForecastDayComparator;
 import com.test.kabak.openweather.ui.forecast.ForecastDayObject;
@@ -38,10 +38,10 @@ public class ForecastRepository {
         data.setValue(new Resource<ForecastDayObject>(Resource.LOADING, null, null));
 
         Single
-                .create(new SingleOnSubscribe<List<ForecastWeather>>() {
+                .create(new SingleOnSubscribe<List<ForecastWeatherTable>>() {
                     @Override
-                    public void subscribe(SingleEmitter<List<ForecastWeather>> e) throws Exception {
-                        List<ForecastWeather> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, getForecastMaxLiveTime());
+                    public void subscribe(SingleEmitter<List<ForecastWeatherTable>> e) throws Exception {
+                        List<ForecastWeatherTable> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, getForecastMaxLiveTime());
                         if (cachedForecast.isEmpty()) {
                             e.onError(new Exception("Empty database"));
                         } else {
@@ -51,14 +51,14 @@ public class ForecastRepository {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<ForecastWeather>>() {
+                .subscribe(new SingleObserver<List<ForecastWeatherTable>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onSuccess(List<ForecastWeather> hourForecasts) {
+                    public void onSuccess(List<ForecastWeatherTable> hourForecasts) {
                         ForecastDayObject forecastDayObject = prepareResult(hourForecasts);
                         data.setValue(new Resource<>(Resource.COMPLETED, forecastDayObject, null));
                     }
@@ -82,23 +82,23 @@ public class ForecastRepository {
         responseSingle
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(new Function<ForecastResponse, List<ForecastWeather>>() {
+                .map(new Function<ForecastResponse, List<ForecastWeatherTable>>() {
                     @Override
-                    public List<ForecastWeather> apply(ForecastResponse forecastResponse) throws Exception {
-                        List<ForecastWeather> hourForecasts = convertServerResponseToStorageObjects(forecastResponse.getForecasts(), cityId);
+                    public List<ForecastWeatherTable> apply(ForecastResponse forecastResponse) throws Exception {
+                        List<ForecastWeatherTable> hourForecasts = convertServerResponseToStorageObjects(forecastResponse.getForecasts(), cityId);
                         DatabaseManager.INSTANCE.getDb().forecastWeatherDao().insertAll(hourForecasts);
                         return hourForecasts;
                     }
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<ForecastWeather>>() {
+                .subscribe(new SingleObserver<List<ForecastWeatherTable>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onSuccess(List<ForecastWeather> hourForecasts) {
+                    public void onSuccess(List<ForecastWeatherTable> hourForecasts) {
                         ForecastDayObject forecastDayObject = prepareResult(hourForecasts);
                         data.setValue(new Resource<>(Resource.COMPLETED, forecastDayObject, null));
                     }
@@ -112,10 +112,10 @@ public class ForecastRepository {
     }
 
     @NonNull
-    ForecastDayObject prepareResult(List<ForecastWeather> hourForecasts) {
-        Map<Integer, ArrayList<ForecastWeather>> groupedForecasts = groupForecastsByDay(hourForecasts);
+    ForecastDayObject prepareResult(List<ForecastWeatherTable> hourForecasts) {
+        Map<Integer, ArrayList<ForecastWeatherTable>> groupedForecasts = groupForecastsByDay(hourForecasts);
 
-        Set<Map.Entry<Integer, ArrayList<ForecastWeather>>> entries = groupedForecasts.entrySet();
+        Set<Map.Entry<Integer, ArrayList<ForecastWeatherTable>>> entries = groupedForecasts.entrySet();
         ForecastDayObject forecastDayObject = buildDayObject(entries);
 
         Collections.sort(forecastDayObject.getForecastDays(), new ForecastDayComparator());
@@ -123,24 +123,24 @@ public class ForecastRepository {
     }
 
     @NonNull
-    static ForecastDayObject buildDayObject(Set<Map.Entry<Integer, ArrayList<ForecastWeather>>> entries) {
+    static ForecastDayObject buildDayObject(Set<Map.Entry<Integer, ArrayList<ForecastWeatherTable>>> entries) {
         ArrayList<ForecastDay> objects = new ArrayList<>(10);
 
-        for (Map.Entry<Integer, ArrayList<ForecastWeather>> entry : entries) {
-            ArrayList<ForecastWeather> dayForecasts = entry.getValue();
+        for (Map.Entry<Integer, ArrayList<ForecastWeatherTable>> entry : entries) {
+            ArrayList<ForecastWeatherTable> dayForecasts = entry.getValue();
 
-            ForecastWeather nearestWeather = null;
+            ForecastWeatherTable nearestWeather = null;
             int nearestHour = Integer.MAX_VALUE;
             int dayWeatherClock = 12;
 
-            for (ForecastWeather currentForecastWeather : dayForecasts) {
+            for (ForecastWeatherTable currentForecastWeatherTable : dayForecasts) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(currentForecastWeather.getDateTime());
+                calendar.setTimeInMillis(currentForecastWeatherTable.getDateTime());
                 int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
 
-                if(Math.abs(hourOfDay - dayWeatherClock) < Math.abs(nearestHour - dayWeatherClock)) {
+                if (Math.abs(hourOfDay - dayWeatherClock) < Math.abs(nearestHour - dayWeatherClock)) {
                     nearestHour = hourOfDay;
-                    nearestWeather = currentForecastWeather;
+                    nearestWeather = currentForecastWeatherTable;
                 }
             }
 
@@ -154,17 +154,17 @@ public class ForecastRepository {
     }
 
     @NonNull
-    static Map<Integer, ArrayList<ForecastWeather>> groupForecastsByDay(List<ForecastWeather> hourForecasts) {
-        Map<Integer, ArrayList<ForecastWeather>> groupedForecasts = new HashMap<>(10);
+    static Map<Integer, ArrayList<ForecastWeatherTable>> groupForecastsByDay(List<ForecastWeatherTable> hourForecasts) {
+        Map<Integer, ArrayList<ForecastWeatherTable>> groupedForecasts = new HashMap<>(10);
 
-        for(ForecastWeather currentForecast : hourForecasts) {
+        for (ForecastWeatherTable currentForecast : hourForecasts) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(currentForecast.getDateTime());
             int key = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR);
 
-            ArrayList<ForecastWeather> existedArray = groupedForecasts.get(key);
+            ArrayList<ForecastWeatherTable> existedArray = groupedForecasts.get(key);
 
-            if(existedArray == null) {
+            if (existedArray == null) {
                 existedArray = new ArrayList<>(10);
                 groupedForecasts.put(key, existedArray);
             }
@@ -175,12 +175,12 @@ public class ForecastRepository {
     }
 
     @NonNull
-    static List<ForecastWeather> convertServerResponseToStorageObjects(List<ForecastResponse.ForecastObject> forecasts, String cityId) {
-        List<ForecastWeather> hourForecasts = new ArrayList<>(forecasts.size());
+    static List<ForecastWeatherTable> convertServerResponseToStorageObjects(List<ForecastResponse.ForecastObject> forecasts, String cityId) {
+        List<ForecastWeatherTable> hourForecasts = new ArrayList<>(forecasts.size());
         long now = System.currentTimeMillis();
 
-        for(ForecastResponse.ForecastObject currentForecast : forecasts) {
-            ForecastWeather forecastWeather = new ForecastWeather(
+        for (ForecastResponse.ForecastObject currentForecast : forecasts) {
+            ForecastWeatherTable forecastWeatherTable = new ForecastWeatherTable(
                     cityId,
                     currentForecast.getMain().getMinT(),
                     currentForecast.getMain().getMaxT(),
@@ -191,7 +191,7 @@ public class ForecastRepository {
                     currentForecast.getDateTime() * 1000,
                     currentForecast.getMain().getTemperature());
 
-            hourForecasts.add(forecastWeather);
+            hourForecasts.add(forecastWeatherTable);
         }
         return hourForecasts;
     }

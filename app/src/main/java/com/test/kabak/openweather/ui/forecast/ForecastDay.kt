@@ -1,11 +1,10 @@
 package com.test.kabak.openweather.ui.forecast
 
-import com.test.kabak.openweather.core.storage.ForecastWeather
-import java.util.*
+import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable
 
 data class ForecastDay(
-        val dayWeather: ForecastWeather,
-        val hourlyWeather: ArrayList<ForecastWeather>
+    val dayWeather: ForecastWeatherTable,
+    val hourlyWeather: ArrayList<ForecastWeatherTable>,
 ) {
     class ForecastDayComparator : Comparator<ForecastDay> {
         override fun compare(o1: ForecastDay, o2: ForecastDay): Int {

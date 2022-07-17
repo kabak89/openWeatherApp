@@ -8,7 +8,7 @@
 
         <variable
             name="item"
-            type="com.test.kabak.openweather.core.storage.City"/>
+            type="com.test.kabak.openweather.data.db.entity.CityTable" />
 
     </data>
 

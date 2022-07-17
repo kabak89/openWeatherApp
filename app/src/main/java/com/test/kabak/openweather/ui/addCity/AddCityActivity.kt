@@ -12,11 +12,10 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_add_city) {
-    private val searchAdapter= SearchAdapter()
+    private val searchAdapter = SearchAdapter()
     private var searchTextEmitter: ObservableEmitter<String>? = null
     private lateinit var addCityViewModel: AddCityViewModel
 
@@ -26,11 +25,8 @@ class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_a
         binding.handler = this
 
         searchAdapter.setListener { city ->
-            addCityViewModel
-                    .addCity(city)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { this@AddCityActivity.onBackPressed() }
+            addCityViewModel.addCity(city)
+            onBackPressed()
         }
 
         binding.citiesListView.adapter = searchAdapter
@@ -43,19 +39,19 @@ class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_a
         addCityViewModel = ViewModelProviders.of(this).get(AddCityViewModel::class.java)
 
         addCityViewModel
-                .setSearchLiveData()
-                .observe(this, Observer { listResource ->
-                    if (listResource?.data != null) {
-                        searchAdapter.setItems(listResource.data)
-                    }
-                })
+            .setSearchLiveData()
+            .observe(this, Observer { listResource ->
+                if (listResource?.data != null) {
+                    searchAdapter.setItems(listResource.data)
+                }
+            })
 
         val disposable = Observable
-                .create(ObservableOnSubscribe<String> { e -> searchTextEmitter = e })
-                .debounce(500, TimeUnit.MILLISECONDS)
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { searchString -> addCityViewModel.findCities(searchString) }
+            .create(ObservableOnSubscribe<String> { e -> searchTextEmitter = e })
+            .debounce(500, TimeUnit.MILLISECONDS)
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { searchString -> addCityViewModel.findCities(searchString) }
 
         compositeDisposable.add(disposable)
     }

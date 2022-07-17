@@ -1,28 +1,23 @@
 package com.test.kabak.openweather.core.network.dataClasses
 
 import com.google.gson.annotations.SerializedName
-import java.util.*
 
 data class CurrentWeatherResponse(
-        val weather: ArrayList<WeatherObject>,
-        val main: MainObject,
-        val wind: WindObject
+    @SerializedName("weather") val weather: List<WeatherObject>,
+    @SerializedName("main") val main: MainObject,
+    @SerializedName("wind") val wind: WindObject,
 ) {
     data class WeatherObject(
-            var description: String,
-            var icon: String
+        @SerializedName("description") var description: String,
+        @SerializedName("icon") var icon: String,
     )
 
     data class MainObject(
-            @SerializedName("temp_min")
-            val tempMin: Float,
-
-            @SerializedName("temp_max")
-            val tempMax: Float
+        @SerializedName("temp_min") val tempMin: Float,
+        @SerializedName("temp_max") val tempMax: Float,
     )
 
     data class WindObject(
-            @SerializedName("speed")
-            val windSpeed: Float
+        @SerializedName("speed") val windSpeed: Float,
     )
 }

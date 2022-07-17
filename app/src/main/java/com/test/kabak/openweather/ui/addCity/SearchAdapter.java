@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.test.kabak.openweather.core.storage.City;
+import com.test.kabak.openweather.data.db.entity.CityTable;
 import com.test.kabak.openweather.databinding.ViewSearchResultBinding;
 
 import java.util.ArrayList;
@@ -15,10 +15,10 @@ import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CityBindingHolder> {
     public interface SearchAdapterListener {
-        void itemClicked(City city);
+        void itemClicked(CityTable cityTable);
     }
 
-    List<City> items = new ArrayList<>(10);
+    List<CityTable> items = new ArrayList<>(10);
     SearchAdapterListener listener;
 
     public SearchAdapter() {
@@ -26,7 +26,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CityBindin
         setHasStableIds(true);
     }
 
-    public void setItems(@Nullable List<City> cities) {
+    public void setItems(@Nullable List<CityTable> cities) {
         this.items.clear();
 
         if (cities != null) {
@@ -55,7 +55,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CityBindin
 
     @Override
     public long getItemId(int position) {
-        return items.get(position).getCityId().hashCode();
+        return items.get(position).getId().hashCode();
     }
 
     @Override

@@ -1,33 +1,36 @@
-package com.test.kabak.openweather.ui.addCity;
+package com.test.kabak.openweather.ui.addCity
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.test.kabak.openweather.core.Resource
+import com.test.kabak.openweather.core.repositories.AddCityRepository
+import com.test.kabak.openweather.data.db.Storage
+import com.test.kabak.openweather.data.db.entity.CityTable
+import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.inject
 
-import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.repositories.AddCityRepository;
-import com.test.kabak.openweather.core.storage.City;
+class AddCityViewModel : ViewModel() {
+    private val storage: Storage by inject(Storage::class.java)
 
-import java.util.List;
+    var addCityRepository = AddCityRepository()
+    var searchLiveData: LiveData<Resource<List<CityTable>>>? = null
 
-import io.reactivex.Completable;
-
-public class AddCityViewModel extends ViewModel {
-    AddCityRepository addCityRepository = new AddCityRepository();
-    LiveData<Resource<List<City>>> searchLiveData;
-
-    public LiveData<Resource<List<City>>> setSearchLiveData() {
-        if(searchLiveData == null) {
-            searchLiveData = addCityRepository.getSearchLiveData();
+    fun setSearchLiveData(): LiveData<Resource<List<CityTable>>> {
+        if (searchLiveData == null) {
+            searchLiveData = addCityRepository.searchLiveData
         }
 
-        return searchLiveData;
+        return searchLiveData!!
     }
 
-    public void findCities(String searchString) {
-        addCityRepository.findCities(searchString);
+    fun findCities(searchString: String?) {
+        addCityRepository.findCities(searchString)
     }
 
-    public Completable addCity(City city) {
-        return addCityRepository.saveCity(city);
+    fun addCity(cityTable: CityTable) {
+        viewModelScope.launch {
+            storage.saveCity(cityTable)
+        }
     }
 }

@@ -6,14 +6,12 @@ import androidx.lifecycle.MutableLiveData;
 import com.test.kabak.openweather.core.Resource;
 import com.test.kabak.openweather.core.network.ServerApi;
 import com.test.kabak.openweather.core.network.dataClasses.SearchCityResponse;
-import com.test.kabak.openweather.core.storage.City;
-import com.test.kabak.openweather.core.storage.DatabaseManager;
+import com.test.kabak.openweather.data.db.entity.CityTable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -22,41 +20,30 @@ import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
-import io.reactivex.internal.operators.completable.CompletableFromAction;
 import io.reactivex.schedulers.Schedulers;
 
 public class AddCityRepository {
     static final Pattern DIGIT_EXTRACT_PATTERN = Pattern.compile("\\D+");
 
-    MutableLiveData<Resource<List<City>>> searchLiveData = new MutableLiveData<>();
+    MutableLiveData<Resource<List<CityTable>>> searchLiveData = new MutableLiveData<>();
     String currentSearchString;
 
-    public LiveData<Resource<List<City>>> getSearchLiveData() {
+    public LiveData<Resource<List<CityTable>>> getSearchLiveData() {
         return searchLiveData;
     }
 
     public void findCities(String searchString) {
-        Resource<List<City>> resource = new Resource<>(Resource.LOADING, null, null);
+        Resource<List<CityTable>> resource = new Resource<>(Resource.LOADING, null, null);
         searchLiveData.setValue(resource);
         currentSearchString = searchString;
         performSearchRequest(searchString);
     }
 
-    public Completable saveCity(final City city) {
-        return new CompletableFromAction(new Action() {
-            @Override
-            public void run() throws Exception {
-                DatabaseManager.INSTANCE.getDb().cityDao().insert(city);
-            }
-        });
-    }
-
     private void performSearchRequest(final String searchString) {
         if(searchString.isEmpty()) {
-            List<City> emptyResult = new ArrayList<>(0);
-            Resource<List<City>> listResource = new Resource<>(Resource.COMPLETED, emptyResult, null);
+            List<CityTable> emptyResult = new ArrayList<>(0);
+            Resource<List<CityTable>> listResource = new Resource<>(Resource.COMPLETED, emptyResult, null);
             searchLiveData.setValue(listResource);
             return;
         }
@@ -65,22 +52,22 @@ public class AddCityRepository {
 
         searchObservable
                 .toObservable()
-                .flatMap(new Function<SearchCityResponse, ObservableSource<Resource<List<City>>>>() {
+                .flatMap(new Function<SearchCityResponse, ObservableSource<Resource<List<CityTable>>>>() {
                     @Override
-                    public ObservableSource<Resource<List<City>>> apply(final SearchCityResponse searchCityResponse) throws Exception {
-                        return Observable.create(new ObservableOnSubscribe<Resource<List<City>>>() {
+                    public ObservableSource<Resource<List<CityTable>>> apply(final SearchCityResponse searchCityResponse) throws Exception {
+                        return Observable.create(new ObservableOnSubscribe<Resource<List<CityTable>>>() {
                             @Override
-                            public void subscribe(ObservableEmitter<Resource<List<City>>> e) throws Exception {
+                            public void subscribe(ObservableEmitter<Resource<List<CityTable>>> e) throws Exception {
                                 ArrayList<SearchCityResponse.SearchResult> results = searchCityResponse.getEmbedded().getSearchList();
-                                List<City> cities = new ArrayList<>(results.size());
+                                List<CityTable> cities = new ArrayList<>(results.size());
 
-                                for(SearchCityResponse.SearchResult currentResult : results) {
+                                for (SearchCityResponse.SearchResult currentResult : results) {
                                     String cityId = DIGIT_EXTRACT_PATTERN.matcher(currentResult.getLinks().getCityItem().getLink()).replaceAll("");
-                                    City city = new City(cityId, currentResult.getName());
-                                    cities.add(city);
+                                    CityTable cityTable = new CityTable(cityId, currentResult.getName());
+                                    cities.add(cityTable);
                                 }
 
-                                Resource<List<City>> listResource = new Resource<>(Resource.COMPLETED, cities, null);
+                                Resource<List<CityTable>> listResource = new Resource<>(Resource.COMPLETED, cities, null);
                                 e.onNext(listResource);
                                 e.onComplete();
                             }
@@ -89,15 +76,15 @@ public class AddCityRepository {
                 })
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Resource<List<City>>>() {
+                .subscribe(new Observer<Resource<List<CityTable>>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(Resource<List<City>> listResource) {
-                        if(currentSearchString.equals(searchString) == false) {
+                    public void onNext(Resource<List<CityTable>> listResource) {
+                        if (currentSearchString.equals(searchString) == false) {
                             return;
                         }
 
@@ -107,7 +94,7 @@ public class AddCityRepository {
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
-                        Resource<List<City>> listResource = new Resource<>(Resource.COMPLETED, null, new Exception(e.getMessage()));
+                        Resource<List<CityTable>> listResource = new Resource<>(Resource.COMPLETED, null, new Exception(e.getMessage()));
                         searchLiveData.setValue(listResource);
                     }
 

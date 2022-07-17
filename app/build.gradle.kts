@@ -8,12 +8,12 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = InfrastructureVersions.compileSdk
 
     defaultConfig {
         applicationId = "com.test.kabak.openweather"
-        minSdk = 21
-        targetSdk = 32
+        minSdk = InfrastructureVersions.minSdk
+        targetSdk = InfrastructureVersions.targetSdk
         versionCode = 1
         versionName = "1.0"
 
@@ -50,8 +50,9 @@ android {
 
 dependencies {
     implementation(project(":mvvm"))
+    implementation(project(":common:util"))
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${InfrastructureVersions.kotlin}")
+    implementation(Deps.kotlin)
 
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -88,7 +89,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${LibVersions.viewModel}")
 
-    implementation("com.jakewharton.timber:timber:4.7.1")
+    implementation(Deps.timber)
 
     implementation("androidx.work:work-runtime-ktx:2.7.1")
 
