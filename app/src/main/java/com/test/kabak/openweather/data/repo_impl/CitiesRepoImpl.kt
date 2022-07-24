@@ -12,5 +12,5 @@ import kotlinx.coroutines.flow.Flow
 class CitiesRepoImpl(
     private val storage: Storage,
 ) : CitiesRepo {
-    override fun getAllCities(): Flow<List<City>> = storage.getCitiesFlow()
+    override fun getCitiesFlow(): Flow<List<City>> = storage.getCitiesFlow()
 }

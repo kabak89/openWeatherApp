@@ -1,198 +1,162 @@
-package com.test.kabak.openweather.core.repositories;
+package com.test.kabak.openweather.core.repositories
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.test.kabak.openweather.core.Resource
+import com.test.kabak.openweather.core.network.WeatherApi
+import com.test.kabak.openweather.core.network.dataClasses.ForecastResponse
+import com.test.kabak.openweather.core.network.dataClasses.ForecastResponse.ForecastObject
+import com.test.kabak.openweather.core.storage.DatabaseManager.getDb
+import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable
+import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable.ForecastWeatherComparator
+import com.test.kabak.openweather.ui.forecast.ForecastDay
+import com.test.kabak.openweather.ui.forecast.ForecastDay.ForecastDayComparator
+import com.test.kabak.openweather.ui.forecast.ForecastDayObject
+import io.reactivex.Single
+import io.reactivex.SingleEmitter
+import io.reactivex.SingleObserver
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import java.util.*
 
-import com.test.kabak.openweather.core.Resource;
-import com.test.kabak.openweather.core.network.ServerApi;
-import com.test.kabak.openweather.core.network.dataClasses.ForecastResponse;
-import com.test.kabak.openweather.core.storage.DatabaseManager;
-import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable;
-import com.test.kabak.openweather.data.db.entity.ForecastWeatherTable.ForecastWeatherComparator;
-import com.test.kabak.openweather.ui.forecast.ForecastDay;
-import com.test.kabak.openweather.ui.forecast.ForecastDay.ForecastDayComparator;
-import com.test.kabak.openweather.ui.forecast.ForecastDayObject;
+class ForecastRepository : KoinComponent {
+    private val weatherApi: WeatherApi by inject()
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleObserver;
-import io.reactivex.SingleOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
-
-public class ForecastRepository {
-    MutableLiveData<Resource<ForecastDayObject>> data = new MutableLiveData<>();
-
-    public LiveData<Resource<ForecastDayObject>> getForecast(final String cityId) {
-        data.setValue(new Resource<ForecastDayObject>(Resource.LOADING, null, null));
-
+    var data = MutableLiveData<Resource<ForecastDayObject>>()
+    fun getForecast(cityId: String): LiveData<Resource<ForecastDayObject>> {
+        data.value = Resource(Resource.LOADING, null, null)
         Single
-                .create(new SingleOnSubscribe<List<ForecastWeatherTable>>() {
-                    @Override
-                    public void subscribe(SingleEmitter<List<ForecastWeatherTable>> e) throws Exception {
-                        List<ForecastWeatherTable> cachedForecast = DatabaseManager.INSTANCE.getDb().forecastWeatherDao().getCachedForecast(cityId, getForecastMaxLiveTime());
-                        if (cachedForecast.isEmpty()) {
-                            e.onError(new Exception("Empty database"));
-                        } else {
-                            e.onSuccess(cachedForecast);
-                        }
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<ForecastWeatherTable>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(List<ForecastWeatherTable> hourForecasts) {
-                        ForecastDayObject forecastDayObject = prepareResult(hourForecasts);
-                        data.setValue(new Resource<>(Resource.COMPLETED, forecastDayObject, null));
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        downloadForecast(cityId);
-                    }
-                });
-
-        return data;
-    }
-
-    private long getForecastMaxLiveTime() {
-        return System.currentTimeMillis() - 1000 * 60 * 30;
-    }
-
-    void downloadForecast(final String cityId) {
-        Single<ForecastResponse> responseSingle = ServerApi.INSTANCE.getWeatherApi().getForecast(cityId);
-
-        responseSingle
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .map(new Function<ForecastResponse, List<ForecastWeatherTable>>() {
-                    @Override
-                    public List<ForecastWeatherTable> apply(ForecastResponse forecastResponse) throws Exception {
-                        List<ForecastWeatherTable> hourForecasts = convertServerResponseToStorageObjects(forecastResponse.getForecasts(), cityId);
-                        DatabaseManager.INSTANCE.getDb().forecastWeatherDao().insertAll(hourForecasts);
-                        return hourForecasts;
-                    }
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleObserver<List<ForecastWeatherTable>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(List<ForecastWeatherTable> hourForecasts) {
-                        ForecastDayObject forecastDayObject = prepareResult(hourForecasts);
-                        data.setValue(new Resource<>(Resource.COMPLETED, forecastDayObject, null));
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Resource<ForecastDayObject> objectResource = new Resource<>(Resource.COMPLETED, null, new Exception(e));
-                        data.setValue(objectResource);
-                    }
-                });
-    }
-
-    @NonNull
-    ForecastDayObject prepareResult(List<ForecastWeatherTable> hourForecasts) {
-        Map<Integer, ArrayList<ForecastWeatherTable>> groupedForecasts = groupForecastsByDay(hourForecasts);
-
-        Set<Map.Entry<Integer, ArrayList<ForecastWeatherTable>>> entries = groupedForecasts.entrySet();
-        ForecastDayObject forecastDayObject = buildDayObject(entries);
-
-        Collections.sort(forecastDayObject.getForecastDays(), new ForecastDayComparator());
-        return forecastDayObject;
-    }
-
-    @NonNull
-    static ForecastDayObject buildDayObject(Set<Map.Entry<Integer, ArrayList<ForecastWeatherTable>>> entries) {
-        ArrayList<ForecastDay> objects = new ArrayList<>(10);
-
-        for (Map.Entry<Integer, ArrayList<ForecastWeatherTable>> entry : entries) {
-            ArrayList<ForecastWeatherTable> dayForecasts = entry.getValue();
-
-            ForecastWeatherTable nearestWeather = null;
-            int nearestHour = Integer.MAX_VALUE;
-            int dayWeatherClock = 12;
-
-            for (ForecastWeatherTable currentForecastWeatherTable : dayForecasts) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(currentForecastWeatherTable.getDateTime());
-                int hourOfDay = calendar.get(Calendar.HOUR_OF_DAY);
-
-                if (Math.abs(hourOfDay - dayWeatherClock) < Math.abs(nearestHour - dayWeatherClock)) {
-                    nearestHour = hourOfDay;
-                    nearestWeather = currentForecastWeatherTable;
+            .create { e: SingleEmitter<List<ForecastWeatherTable>> ->
+                val cachedForecast = getDb().forecastWeatherDao().getCachedForecast(
+                    cityId = cityId,
+                    timestamp = forecastMaxLiveTime
+                )
+                if (cachedForecast.isEmpty()) {
+                    e.onError(Exception("Empty database"))
+                } else {
+                    e.onSuccess(cachedForecast)
                 }
             }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : SingleObserver<List<ForecastWeatherTable>> {
+                override fun onSubscribe(d: Disposable) {}
+                override fun onSuccess(hourForecasts: List<ForecastWeatherTable>) {
+                    val forecastDayObject = prepareResult(hourForecasts)
+                    data.value = Resource(Resource.COMPLETED, forecastDayObject, null)
+                }
 
-            ForecastDay forecastDay = new ForecastDay(nearestWeather, dayForecasts);
-            Collections.sort(forecastDay.getHourlyWeather(), new ForecastWeatherComparator());
-            objects.add(forecastDay);
-        }
-
-        ForecastDayObject forecastDayObject = new ForecastDayObject(objects);
-        return forecastDayObject;
+                override fun onError(e: Throwable) {
+                    downloadForecast(cityId)
+                }
+            })
+        return data
     }
 
-    @NonNull
-    static Map<Integer, ArrayList<ForecastWeatherTable>> groupForecastsByDay(List<ForecastWeatherTable> hourForecasts) {
-        Map<Integer, ArrayList<ForecastWeatherTable>> groupedForecasts = new HashMap<>(10);
+    private val forecastMaxLiveTime: Long
+        get() = System.currentTimeMillis() - 1000 * 60 * 30
 
-        for (ForecastWeatherTable currentForecast : hourForecasts) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(currentForecast.getDateTime());
-            int key = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR);
-
-            ArrayList<ForecastWeatherTable> existedArray = groupedForecasts.get(key);
-
-            if (existedArray == null) {
-                existedArray = new ArrayList<>(10);
-                groupedForecasts.put(key, existedArray);
+    fun downloadForecast(cityId: String) {
+        val responseSingle: Single<ForecastResponse> = weatherApi.getForecast(cityId)
+        responseSingle
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.io())
+            .map {
+                val hourForecasts = convertServerResponseToStorageObjects(
+                    it.forecasts, cityId)
+                getDb().forecastWeatherDao().insertAll(hourForecasts)
+                hourForecasts
             }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : SingleObserver<List<ForecastWeatherTable>> {
+                override fun onSubscribe(d: Disposable) {}
+                override fun onSuccess(hourForecasts: List<ForecastWeatherTable>) {
+                    val forecastDayObject = prepareResult(hourForecasts)
+                    data.setValue(Resource(Resource.COMPLETED, forecastDayObject, null))
+                }
 
-            existedArray.add(currentForecast);
-        }
-        return groupedForecasts;
+                override fun onError(e: Throwable) {
+                    val objectResource =
+                        Resource<ForecastDayObject>(Resource.COMPLETED, null, Exception(e))
+                    data.setValue(objectResource)
+                }
+            })
     }
 
-    @NonNull
-    static List<ForecastWeatherTable> convertServerResponseToStorageObjects(List<ForecastResponse.ForecastObject> forecasts, String cityId) {
-        List<ForecastWeatherTable> hourForecasts = new ArrayList<>(forecasts.size());
-        long now = System.currentTimeMillis();
+    fun prepareResult(hourForecasts: List<ForecastWeatherTable>): ForecastDayObject {
+        val groupedForecasts = groupForecastsByDay(hourForecasts)
+        val entries = groupedForecasts.entries
+        val forecastDayObject = buildDayObject(entries)
+        Collections.sort(forecastDayObject.forecastDays, ForecastDayComparator())
+        return forecastDayObject
+    }
 
-        for (ForecastResponse.ForecastObject currentForecast : forecasts) {
-            ForecastWeatherTable forecastWeatherTable = new ForecastWeatherTable(
-                    cityId,
-                    currentForecast.getMain().getMinT(),
-                    currentForecast.getMain().getMaxT(),
-                    currentForecast.getWeather().get(0).getDescription(),
-                    currentForecast.getWeather().get(0).getIcon(),
-                    now,
-                    currentForecast.getWind().getWindSpeed(),
-                    currentForecast.getDateTime() * 1000,
-                    currentForecast.getMain().getTemperature());
-
-            hourForecasts.add(forecastWeatherTable);
+    companion object {
+        fun buildDayObject(entries: Set<Map.Entry<Int, ArrayList<ForecastWeatherTable>>>): ForecastDayObject {
+            val objects = ArrayList<ForecastDay>(10)
+            for ((_, dayForecasts) in entries) {
+                var nearestWeather: ForecastWeatherTable? = null
+                var nearestHour = Int.MAX_VALUE
+                val dayWeatherClock = 12
+                for (currentForecastWeatherTable in dayForecasts) {
+                    val calendar = Calendar.getInstance()
+                    calendar.timeInMillis = currentForecastWeatherTable.dateTime
+                    val hourOfDay = calendar[Calendar.HOUR_OF_DAY]
+                    if (Math.abs(hourOfDay - dayWeatherClock) < Math.abs(
+                            nearestHour - dayWeatherClock)
+                    ) {
+                        nearestHour = hourOfDay
+                        nearestWeather = currentForecastWeatherTable
+                    }
+                }
+                val forecastDay = ForecastDay(nearestWeather!!, dayForecasts)
+                Collections.sort(forecastDay.hourlyWeather,
+                    ForecastWeatherComparator())
+                objects.add(forecastDay)
+            }
+            return ForecastDayObject(objects)
         }
-        return hourForecasts;
+
+        fun groupForecastsByDay(hourForecasts: List<ForecastWeatherTable>): Map<Int, ArrayList<ForecastWeatherTable>> {
+            val groupedForecasts: MutableMap<Int, ArrayList<ForecastWeatherTable>> = HashMap(10)
+            for (currentForecast in hourForecasts) {
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = currentForecast.dateTime
+                val key = calendar[Calendar.YEAR] * 1000 + calendar[Calendar.DAY_OF_YEAR]
+                var existedArray = groupedForecasts[key]
+                if (existedArray == null) {
+                    existedArray = ArrayList(10)
+                    groupedForecasts[key] = existedArray
+                }
+                existedArray.add(currentForecast)
+            }
+            return groupedForecasts
+        }
+
+        fun convertServerResponseToStorageObjects(
+            forecasts: List<ForecastObject>,
+            cityId: String,
+        ): List<ForecastWeatherTable> {
+            val hourForecasts: MutableList<ForecastWeatherTable> = ArrayList(forecasts.size)
+            val now = System.currentTimeMillis()
+
+            forecasts.forEach {
+                val forecastWeatherTable = ForecastWeatherTable(
+                    cityId = cityId,
+                    minT = it.main.minT,
+                    maxT = it.main.maxT,
+                    description = it.weather[0].description,
+                    icon = it.weather[0].icon,
+                    timestamp = now,
+                    windSpeed = it.wind.windSpeed,
+                    dateTime = it.dateTime * 1000,
+                    temperature = it.main.temperature)
+                hourForecasts.add(forecastWeatherTable)
+            }
+            return hourForecasts
+        }
     }
 }

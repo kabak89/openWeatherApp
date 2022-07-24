@@ -14,8 +14,10 @@ class WeatherInteractor(
     fun getWeatherFlow(): Flow<List<CurrentWeather>> = weatherRepo.getWeatherFlow()
     suspend fun updateWeather(cityId: String): CallResult<Unit> = weatherRepo.updateWeather(cityId)
 
-    //TODO
-//    fun isWeatherOutdated(weather: CurrentWeather): Boolean {
-//
-//    }
+    fun isWeatherOutdated(weather: CurrentWeather): Boolean =
+        System.currentTimeMillis() - weather.timestamp > CURRENT_WEATHER_MAX_LIVE_TIME
+
+    private companion object {
+        const val CURRENT_WEATHER_MAX_LIVE_TIME = 1000 * 60 * 10
+    }
 }

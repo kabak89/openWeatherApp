@@ -3,15 +3,14 @@
  */
 package com.test.kabak.openweather.data.network
 
-import com.test.kabak.openweather.core.network.ServerApi
+import com.test.kabak.openweather.core.network.WeatherApi
 import com.test.kabak.openweather.domain.entity.CurrentWeather
 
-
 class WeatherService(
-
+    private val weatherApi: WeatherApi,
 ) {
     suspend fun getWeather(cityId: String): CurrentWeather =
-        ServerApi.weatherApi.getCurrentWeather(cityId)
+        weatherApi.getCurrentWeather(cityId)
             .let { response ->
                 WeatherServiceMapper.mapWeatherResponse(response = response, cityId = cityId)
             }

@@ -7,5 +7,5 @@ import com.test.kabak.openweather.domain.entity.City
 import kotlinx.coroutines.flow.Flow
 
 interface CitiesRepo {
-    fun getAllCities(): Flow<List<City>>
+    fun getCitiesFlow(): Flow<List<City>>
 }

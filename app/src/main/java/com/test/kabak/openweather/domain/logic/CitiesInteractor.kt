@@ -10,5 +10,5 @@ import kotlinx.coroutines.flow.Flow
 class CitiesInteractor(
     private val citiesRepo: CitiesRepo,
 ) {
-    fun getCities(): Flow<List<City>> = citiesRepo.getAllCities()
+    fun getCities(): Flow<List<City>> = citiesRepo.getCitiesFlow()
 }

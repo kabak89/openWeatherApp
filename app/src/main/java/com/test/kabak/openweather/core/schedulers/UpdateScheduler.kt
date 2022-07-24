@@ -1,7 +1,7 @@
 package com.test.kabak.openweather.core.schedulers
 
 import androidx.work.*
-import com.test.kabak.openweather.core.workers.UpdateForecastDataWorker
+import com.test.kabak.openweather.data.workers.UpdateForecastDataWorker
 import java.util.concurrent.TimeUnit
 
 object UpdateScheduler {
