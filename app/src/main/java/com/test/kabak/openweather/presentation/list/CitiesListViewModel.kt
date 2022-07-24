@@ -5,13 +5,19 @@ import com.test.kabak.openweather.domain.entity.City
 import com.test.kabak.openweather.domain.entity.CurrentWeather
 import com.test.kabak.openweather.domain.logic.CitiesInteractor
 import com.test.kabak.openweather.domain.logic.WeatherInteractor
+import com.test.kabak.openweather.presentation.ErrorConverter
+import com.test.kabak.openweather.presentation.ErrorTranslator
+import com.test.kabak.openweather.util.CallResult
+import com.test.kabak.openweather.util.PrintableText
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class CitiesListViewModel(
-    private val citiesInteractor: CitiesInteractor,
+    citiesInteractor: CitiesInteractor,
     private val weatherInteractor: WeatherInteractor,
     private val citiesListMapper: CitiesListMapper,
+    private val errorTranslator: ErrorTranslator,
+    private val errorConverter: ErrorConverter,
 ) : com.example.mvvm.BaseViewModel<CitiesListState, CitiesListEvent>() {
     private val citiesFlow = citiesInteractor.getCities()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -37,13 +43,15 @@ class CitiesListViewModel(
                     it.copy(cities = newWeather)
                 }
 
-                cityWeatherMap
+                val citiesIds = cityWeatherMap
                     .filter {
                         it.value == null
                     }
-                    .forEach { currentPair ->
-                        weatherInteractor.updateWeather(cityId = currentPair.key.id)
+                    .map { currentPair ->
+                        currentPair.key.id
                     }
+
+                updateWeatherForCitiesIds(citiesIds)
             }
             .launchIn(viewModelScope)
     }
@@ -56,8 +64,24 @@ class CitiesListViewModel(
 
     fun loadData() {
         viewModelScope.launch {
-            citiesFlow.value
-                .forEach { weatherInteractor.updateWeather(it.id) }
+            val citiesIds = citiesFlow.value
+                .map { it.id }
+
+            updateWeatherForCitiesIds(citiesIds)
         }
+    }
+
+    private suspend fun updateWeatherForCitiesIds(citiesIds: List<String>) {
+        updateState { it.copy(isLoading = true) }
+
+        val result = weatherInteractor.updateWeather(citiesIds)
+
+        if (result is CallResult.Error) {
+            val error = errorConverter.convertError(result.error)
+            val message = errorTranslator.buildErrorMessage(error)
+            sendEvent(CitiesListEvent.ShowToast(PrintableText.Raw(message)))
+        }
+
+        updateState { it.copy(isLoading = false) }
     }
 }

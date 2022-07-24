@@ -2,6 +2,7 @@ package com.test.kabak.openweather.presentation.list
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -16,7 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import coil.compose.AsyncImage
+import com.example.mvvm.model.BaseViewEvent
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.test.kabak.openweather.R
@@ -27,6 +32,7 @@ import com.test.kabak.openweather.ui.common.dividerColor
 import com.test.kabak.openweather.ui.common.textColor
 import com.test.kabak.openweather.ui.forecast.ForecastActivity
 import com.test.kabak.openweather.util.getPrintableText
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class CitiesListActivity : ComponentActivity() {
@@ -37,18 +43,20 @@ class CitiesListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        lifecycleScope.launch {
+            vm.viewEvent.flowWithLifecycle(lifecycle = lifecycle, Lifecycle.State.STARTED)
+                .collect {
+                    when (it) {
+                        is BaseViewEvent.ScreenEvent -> handleEvent(it.event)
+                    }
+                }
+        }
+
         setContent {
             MyTheme {
                 MyScreen()
             }
         }
-
-        //TODO
-//        viewModel.errorsLiveData.observe(this) { event ->
-//            event?.getContentIfNotHandled()?.let {
-//                ErrorInteractor.handleError(it, this@ListActivity, binding.root)
-//            }
-//        }
     }
 
     @Composable
@@ -179,6 +187,16 @@ class CitiesListActivity : ComponentActivity() {
         bundle.putString(CITY_ID_KEY, item.cityId)
         intent.putExtras(bundle)
         ActivityCompat.startActivity(this@CitiesListActivity, intent, null)
+    }
+
+    private fun handleEvent(event: CitiesListEvent) {
+        when (event) {
+            is CitiesListEvent.ShowToast -> Toast.makeText(
+                this,
+                this.getPrintableText(event.message),
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     companion object {

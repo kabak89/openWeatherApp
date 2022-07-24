@@ -51,6 +51,7 @@ android {
 dependencies {
     implementation(project(":mvvm"))
     implementation(project(":common:util"))
+    implementation(project(":common:design"))
 
     implementation(Deps.kotlin)
 

@@ -17,6 +17,8 @@ import com.test.kabak.openweather.domain.logic.CitiesInteractor
 import com.test.kabak.openweather.domain.logic.WeatherInteractor
 import com.test.kabak.openweather.domain.repo.CitiesRepo
 import com.test.kabak.openweather.domain.repo.WeatherRepo
+import com.test.kabak.openweather.presentation.ErrorConverter
+import com.test.kabak.openweather.presentation.ErrorTranslator
 import com.test.kabak.openweather.presentation.list.CitiesListMapper
 import com.test.kabak.openweather.presentation.list.CitiesListViewModel
 import okhttp3.OkHttpClient
@@ -85,6 +87,9 @@ private fun Module.domain() {
 }
 
 private fun Module.presentation() {
+    singleOf(::ErrorTranslator)
+    singleOf(::ErrorConverter)
+
     singleOf(::CitiesListMapper)
     viewModelOf(::CitiesListViewModel)
 }
