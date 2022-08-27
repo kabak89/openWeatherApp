@@ -18,7 +18,7 @@ class CheckKoinViewModels {
         val viewModels = projectRoot
             .walk()
             .excludeBuildFiles()
-            .filter { it.extension == "kt" }
+            .filter { it.extension == "kt" || it.extension == "java" }
             .mapNotNull(::isViewModelFile)
             .toList()
 
@@ -82,7 +82,6 @@ class CheckKoinViewModels {
     private companion object {
         val exceptions = listOf(
             "BaseViewModel",
-            "AddCityViewModel",
         )
     }
 }

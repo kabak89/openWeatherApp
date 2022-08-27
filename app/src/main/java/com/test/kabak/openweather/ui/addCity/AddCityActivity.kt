@@ -3,7 +3,6 @@ package com.test.kabak.openweather.ui.addCity
 import android.os.Bundle
 import android.text.Editable
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.test.kabak.openweather.R
 import com.test.kabak.openweather.databinding.ActivityAddCityBinding
@@ -12,12 +11,15 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 import java.util.concurrent.TimeUnit
 
 class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_add_city) {
     private val searchAdapter = SearchAdapter()
     private var searchTextEmitter: ObservableEmitter<String>? = null
-    private lateinit var addCityViewModel: AddCityViewModel
+    private val addCityViewModel: AddCityViewModel by lazy(mode = LazyThreadSafetyMode.NONE) {
+        getViewModel()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +36,6 @@ class AddCityActivity : BaseActivity<ActivityAddCityBinding>(R.layout.activity_a
 
         val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         binding.citiesListView.addItemDecoration(dividerItemDecoration)
-
-
-        addCityViewModel = ViewModelProviders.of(this).get(AddCityViewModel::class.java)
 
         addCityViewModel
             .setSearchLiveData()

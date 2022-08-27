@@ -21,6 +21,8 @@ import com.test.kabak.openweather.presentation.ErrorConverter
 import com.test.kabak.openweather.presentation.ErrorTranslator
 import com.test.kabak.openweather.presentation.list.CitiesListMapper
 import com.test.kabak.openweather.presentation.list.CitiesListViewModel
+import com.test.kabak.openweather.ui.addCity.AddCityViewModel
+import com.test.kabak.openweather.ui.forecast.ForecastViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.androidx.viewmodel.dsl.viewModelOf
@@ -92,4 +94,6 @@ private fun Module.presentation() {
 
     singleOf(::CitiesListMapper)
     viewModelOf(::CitiesListViewModel)
+    viewModelOf(::AddCityViewModel)
+    viewModelOf(::ForecastViewModel)
 }

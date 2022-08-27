@@ -2,7 +2,6 @@ package com.test.kabak.openweather.ui.forecast
 
 import android.os.Bundle
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.test.kabak.openweather.R
 import com.test.kabak.openweather.core.Resource
@@ -10,9 +9,12 @@ import com.test.kabak.openweather.databinding.ActivityForecastBinding
 import com.test.kabak.openweather.presentation.list.CitiesListActivity.Companion.CITY_ID_KEY
 import com.test.kabak.openweather.ui.common.BaseActivity
 import com.test.kabak.openweather.ui.common.UniversalAdapter
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class ForecastActivity : BaseActivity<ActivityForecastBinding>(R.layout.activity_forecast) {
-    private lateinit var viewModel: ForecastViewModel
+    private val viewModel: ForecastViewModel by lazy(mode = LazyThreadSafetyMode.NONE) {
+        getViewModel()
+    }
     private val citiesAdapter = UniversalAdapter()
     var cityId: String? = null
 
@@ -29,8 +31,6 @@ class ForecastActivity : BaseActivity<ActivityForecastBinding>(R.layout.activity
 
         val dividerItemDecoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         binding.forecastListView.addItemDecoration(dividerItemDecoration)
-
-        viewModel = ViewModelProviders.of(this).get(ForecastViewModel::class.java)
 
         val extras = intent.extras
         cityId = extras!!.getString(CITY_ID_KEY)
